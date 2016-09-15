@@ -1,3 +1,4 @@
 # geopyter
 
-Test
+Geographical Python Teaching Resource
+
