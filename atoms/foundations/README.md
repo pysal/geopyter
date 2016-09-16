@@ -11,11 +11,15 @@ Ideally, examples in this atom will make use of the following data sets only:
 ## Sequencing
 
 You are always free to import as much or as little of the atom as you need, but the intended sequence for the materials is:
-1. [Getting Started](Getting-Started.ipynb)
-2. [The Basics](The Basics.ipynb)
-3. [Errors and Debugging](Errors and Debugging.ipynb)
-4. [Lists](Lists.ipynb)
-5. [Dictionaries](Dictionaries.ipynb)
-7. [Truth and Conditions](Truth and Conditionals.ipynb)
-8. [Loops and Iteration](Loos and Iteration.ipynb)
-9. [Functions](Functions.ipynb)
+
+| Session | Contributors |
+| ---- | ---- | 
+| 1. [Getting Started: Thinking Like a Computer](Getting_Started.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) |
+| 2. [The Basics](Basics.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 3. [Dealing with Errors & Debugging](Debugging.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 4. [Truth with Conditions](Conditions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 5. [Lists](Lists.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 6. [Dictionaries](Dictionaries.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 7. [Loops and Iteration](Iteration.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 8. [Introduction to Functions](Functions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+
