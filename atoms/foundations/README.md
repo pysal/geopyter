@@ -5,9 +5,14 @@ This atom contains the introductory materials to take geography students who hav
 ## Data Sets
 
 Examples in this atom make use of the following data sets:
-* [UK_Major_Metro_Areas.csv](./data/UK_Major_Metro_Areas.csv) (Derived from Wikipedia data) -- this file contains one header row and ten observations; it is intended to be easy to read for students so that they can understand what is going on when the read in the file. The permanent URL for this data set is: https://github.com/...
-* [UK_Metro_Areas.csv](./data/UK_Metro_Areas.csv) (Derived from Wikipedia data) -- this file contains one header row and 73 observations; it is intended to demonstrate the value of computers in parsing data sets that do _not_ scan easily. The permanent URL for this data set is: https://github.com/...
-* US Regional Income Data: this can be found in the pysal.examples directory under  'us_income/usjoin.csv'. Since this data is provided by default with PySAL it does not need to be downloaded from a remote URL.
+* [UK_Major_Metro_Areas.csv](./data/UK_Major_Metro_Areas.csv) (Derived from Wikipedia data) -- this file contains one header row and ten observations; it is intended to be easy to read for students so that they can understand what is going on when the read in the file. The permanent URL for this data set is: [https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv](https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv)
+* [UK_Metro_Areas.csv](./data/UK_Metro_Areas.csv) (Derived from Wikipedia data) -- this file contains one header row and 73 observations; it is intended to demonstrate the value of computers in parsing data sets that do _not_ scan easily. The permanent URL for this data set is: [https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv](https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv)
+* US Regional Income Data: this can be found in the `pysal.examples` directory under  `us_income/usjoin.csv`. Since this data is provided by default with PySAL it does not need to be downloaded from a remote URL. You access this file using the following code:
+```python
+import os
+import pysal as ps
+f = ps.open(os.path.join(ps.examples.example_dir, 'us_income/usjoin.csv'))
+```
 
 ## Sequencing
 
