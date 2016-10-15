@@ -1,21 +1,33 @@
 # Foundational Concepts in Programming
 
-This atom contains the key materials to take geography students who have never programmed before from the 'hello world' level through to their first function. We deliberately ignore some of the subtleties of Python (classes, inheritance, etc.) in favour of getting students going as quickly as possible.
+This atom contains the introductory materials to take geography students who have never programmed before from the 'hello world' level through to their first function. We deliberately ignore some of the subtleties of Python (classes, inheritance, etc.) in favour of getting students going as quickly as possible.
 
 ## Data Sets
 
-Ideally, examples in this atom will make use of the following data sets only:
-* pysal.examples.???
-* local CSV file???
+Examples in this atom make use of the following data sets:
+1. [UK_Major_Metro_Areas.csv](./data/UK_Major_Metro_Areas.csv) (Derived from Wikipedia data) -- this data set contains one header row and ten observations; it is intended to be easy to read for students so that they can understand what is going on when the read in the file. The file is provided by default with a Git checkout, and the permanent remote URL is: [https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv](https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv)
+2. [UK_Metro_Areas.csv](./data/UK_Metro_Areas.csv) (Derived from Wikipedia data) -- this data set contains one header row and 73 observations; it is intended to demonstrate the value of computers in parsing data sets that do _not_ scan easily. The file is provided by default with a Git checkout, and the permanent remote URL is:  [https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv](https://github.com/pysal/geopyter/tree/master/atoms/foundations/data/UK_Metro_Areas.csv)
+3. US Regional Income Data: this can be found in the `pysal.examples` directory under  `us_income/usjoin.csv`. 
+
+Since the third data set is provided by default with PySAL it does not need to be downloaded from a remote URL or checked out of Git. You access this file using the following code:
+```python
+import os
+import pysal as ps
+f = ps.open(os.path.join(ps.examples.example_dir, 'us_income/usjoin.csv'))
+```
 
 ## Sequencing
 
 You are always free to import as much or as little of the atom as you need, but the intended sequence for the materials is:
-1. [Getting Started](Getting-Started.ipynb)
-2. [The Basics](The Basics.ipynb)
-3. [Errors and Debugging](Errors and Debugging.ipynb)
-4. [Lists](Lists.ipynb)
-5. [Dictionaries](Dictionaries.ipynb)
-7. [Truth and Conditions](Truth and Conditionals.ipynb)
-8. [Loops and Iteration](Loos and Iteration.ipynb)
-9. [Functions](Functions.ipynb)
+
+| Session | Contributors |
+| ---- | ---- | 
+| 1. [Getting Started: Thinking Like a Computer](Getting_Started.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) |
+| 2. [The Basics](Basics.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 3. [Dealing with Errors & Debugging](Debugging.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 4. [Truth with Conditions](Conditions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 5. [Lists](Lists.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 6. [Dictionaries](Dictionaries.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 7. [Loops and Iteration](Iteration.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+| 8. [Introduction to Functions](Functions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+

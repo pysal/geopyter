@@ -1,0 +1,74 @@
+id,Name,Rank,Population,Longitude,Latitude,Area,Density,Subs,MetroArea,Changes
+1,Greater London,1,9787426,-18162.92767,6711153.709,1737.9,5630,"London Boroughs, Hemel Hempstead, Watford, Woking, Harlow, St Albans, Bracknell",London,"The addition of Guildford, Harlow, Bracknell and St Albans"
+2,Greater Manchester,2,2553379,-251761.802,7073067.458,630.3,4051,"Manchester, Salford, Bolton, Stockport, Oldham, Rochdale, Bury, Trafford, Tameside",Manchester,"The addition of Golborne, Glossop and Newton-le-Willows"
+3,West Midlands,3,2440986,-210635.2396,6878950.083,598.9,4076,"Birmingham, Wolverhampton, West Bromwich, Dudley, Walsall, Solihull",Birmingham,
+4,West Yorkshire,4,1777934,-185959.3022,7145450.207,487.8,3645,"Leeds, Bradford, Wakefield, Huddersfield, Dewsbury, Keighley, Halifax",Leeds-Bradford,The addition of Halifax
+5,Glasgow,5,1209143,-473845.2389,7538620.144,368.5,3390,"Glasgow, Paisley, Clydebank",Glasgow,
+6,Liverpool,6,864122,-340595.1768,7063197.083,199.6,4329,"Liverpool, Bootle, Litherland, Crosby, Prescot, St. Helens, Ashton-in-Makerfield",Liverpool,The addition of Ashton-in-Makerfield
+7,South Hampshire,7,855569,-174443.8647,6589419.084,192,4455,"Southampton, Portsmouth, Eastleigh, Gosport, Fareham, Havant, Horndean",Southampton-Portsmouth,Portsmouth Urban Area and Southampton Urban Area combined into one.
+8,Tyneside,8,774891,-187604.3647,7356018.207,180.5,4292,"Newcastle upon Tyne, Gateshead, South Shields, Tynemouth, Wallsend, Whitley Bay, Jarrow",Newcastle-Sunderland,"Washington, Chester-Le-Street, Hetton-le-Hole and Houghton-le-Spring are no longer part of the built-up area."
+9,Nottingham,9,729977,-131672.2399,6979298.895,176.4,4139,"Nottingham, Beeston, Carlton, West Bridgford, Ilkeston, Hucknall",Nottingham-Derby,
+10,Sheffield,10,685368,-163545.3257,7055177.403,167.5,4092,"Sheffield, Rotherham, Rawmarsh",Sheffield,
+11,Bristol,11,617280,-283223.6223,6708480.482,144.4,4274,"Bristol, Filton, Pill, Frampton Cotterell, Kingswood, Warmley, Mangotsfield, Winterbourne",Bristol,
+12,Belfast,12,579127,-659942.9337,7289187.543,,,,Belfast,
+13,Leicester,13,508916,-128587.7477,6917403.419,109.4,4653,"Leicester, Syston, Whetstone, Birstall, Narborough, Enderby",Leicester,Ratby no longer part of the built-up area.
+14,Edinburgh,14,482005,-353961.3096,7552397.542,,,,Edinburgh,
+15,Brighton and Hove,15,474485,-18368.56048,6593326.107,89.4,5304,"Brighton and Hove, Worthing, Littlehampton, Shoreham-by-Sea",Brighton,"Rottingdean, Saltdean and Findon are no longer part of the built-up area."
+16,Bournemouth/Poole,16,466266,-243742.1224,6565360.045,131,3559,"Bournemouth, Poole, Christchurch, Ferndown, New Milton, Wimborne Minster",Bournemouth/Poole,Ferndown and Wimborne Minster now part of the built-up area.
+17,Cardiff,17,447287,-357251.4345,6710125.544,102.3,4370,"Cardiff, Caerphilly, Penarth, Pontypridd",Cardiff-Newport,Caerphilly and Pontypridd now part of the built-up area.
+18,Teesside,18,376633,-136813.0602,7284252.355,108.2,3482,"Middlesbrough, Stockton-On-Tees, Billingham, Redcar",Middlesbrough,"Eston & Southbank now part of Middlesbrough sub-division, no longer counted as separate sub-division"
+19,Stoke-on-Trent,19,372775,-246620.9817,6990197.434,103.9,3588,"Stoke-on-Trent, Newcastle-under-Lyme, Kidsgrove",Stoke-on-Trent,
+20,Coventry,20,359262,-169303.0444,6876688.122,81.3,4420,"Coventry, Bedworth",Birmingham,
+21,Sunderland,21,335415,-156142.5445,7336483.09,83.5,4018,"Sunderland, Washington, Chester-Le-Street, Hetton-le-Hole, Houghton-le-Spring",Newcastle-Sunderland,"Addition of Washington, Chester-Le-Street, Hetton-le-Hole and Houghton-le-Spring"
+22,Birkenhead,22,325264,-373290.7939,7038726.778,88.2,3687,"Birkenhead, Wallasey, Ellesmere Port, Bebington",Liverpool,
+23,Reading,23,318014,-113370.9196,6703134.029,83.7,3800,"Reading, Wokingham, Woodley, Crowthorne",London,Bracknell no longer part of the built-up area.
+24,Kingston upon Hull,24,314018,-41707.88464,7124167.211,82.6,3802,"Kingston upon Hull, Cottingham, Hessle",Hull,
+25,Preston,25,313322,-306768.5792,7125401.008,82.4,3802,"Preston, Bamber Bridge, Chorley, Fulwood, Leyland",Preston,The addition of Longton and Adlington to the built-up area.
+26,Newport,26,306844,-283737.7043,6751971.822,84.2,3643,"Newport, Pontypool, Cwmbran, Blackwood, Risca, Ystrad Mynach",Cardiff-Newport,"Pontypool, Cwmbran and Blackwood added to the built-up area."
+27,Swansea,27,300352,-451534.0788,6738811.322,87.6,3431,"Swansea, Neath, Port Talbot, Ystradgynlais, Pontardawe",Swansea/Neath/Port Talbot,Ystradgynlais now part of the built-up area.
+28,Southend-on-Sea,28,295310,78176.04472,6724005.759,71.8,4111,"Southend-on-Sea, Hullbridge, Rayleigh, Rochford",London,Hullbridge now part of the built-up area.
+29,Derby,29,270468,-168172.064,6970353.868,64.1,4219,"Derby, Borrowash, Duffield",Nottingham-Derby,
+30,Plymouth,30,260203,-464283.3132,6512203.963,59.7,4356,"Plymouth, Plymstock",Plymouth,
+31,Luton,31,258018,-53017.6893,6785284.337,50.7,5088,"Luton, Dunstable, Houghton Regis",London,
+32,Farnborough/Aldershot,32,252397,-87152.73608,6664783.509,78.5,3217,"Farnborough, Aldershot, Camberley, Farnham, Frimley, Sandhurst, Yateley",London,
+33,Medway Towns,33,243931,58435.29477,6698507.291,52.2,4677,"Gillingham, Chatham, Rochester",London,
+34,Blackpool,34,239409,-342137.4229,7142674.164,61.3,3908,"Blackpool, Lytham St Annes, Poulton-le-Fylde, Thornton, Cleveleys",Blackpool,Fleetwood no longer forms part of the built-up area.
+35,Milton Keynes,35,229941,-88797.79857,6803791.29,62.5,3678,"'Milton Keynes',[7] Bletchley, Newport Pagnell, Woburn Sands",Milton Keynes,The addition of Woburn Sands.
+36,Northampton,37,215963,-108538.5485,6849853.04,57.9,3731,"Northampton, Collingtree",Northampton,
+37,Barnsley/Dearne Valley,36,223281,-167966.4312,7087358.938,59.7,3739,"Barnsley, Wath upon Dearne, Wombwell, Hoyland",Sheffield,
+38,Norwich,38,213166,142539.1149,6915861.173,61.9,3444,"Norwich, Taverham, Costessey, Cringleford, Hellesdon",Norwich,
+39,Aberdeen,39,207932,-237470.3216,7791034.42,,,,Aberdeen,
+40,Swindon,40,185609,-197166.2905,6721743.798,47.1,3945,"Swindon, Haydon Wick, Stratton St. Margaret, Broad Blunsdon, Blunsdon St Andrew, Wroughton",Swindon,
+41,Crawley,41,180508,-21144.60345,6652651.174,58.1,3107,"Crawley, Horley, East Grinstead, Copthorne, Crawley Down",London,"The addition of East Grinstead, Copthorne and Crawley Down."
+42,Ipswich,42,178835,125265.9587,6817157.423,49.1,3639,"Ipswich, Kesgrave, Woodbridge",Ipswich,The addition of Woodbridge.
+43,Wigan,43,175405,-298337.6339,7086947.672,43.8,4009,"Wigan, Skelmersdale, Standish, Ince-in-Makerfield",Manchester,
+44,Mansfield,44,171958,-136298.9781,7011274.798,48.4,3556,"Mansfield, Sutton-in-Ashfield, Kirkby-in-Ashfield, Mansfield Woodhouse",Nottingham-Derby,
+45,Oxford,45,171380,-140411.6344,6760402.767,37.4,4585,"Oxford, Kennington, Wheatley",Oxford,The addition of Kennington and Wheatley.
+46,Warrington,46,165456,-299160.1652,7058981.61,44.9,3686,Warrington,Liverpool,
+47,Slough,47,163777,-72141.54081,6715986.08,34.1,4797,"Slough, Stoke Poges, Poyle",London,
+48,Peterborough,48,163379,-30192.44717,6905990.798,44.2,3693,"Peterborough, Farcet",Peterborough,
+49,Cambridge,49,158434,10934.11522,6840188.298,42.1,3760,"Cambridge, Fen Ditton, Girton, Histon",Cambridge,Addition of Histon and Impington and Fen Ditton
+50,Doncaster,50,158141,-129718.7281,7086125.141,43.5,3634,"Doncaster, Bentley, Armthorpe, Sprotbrough",Sheffield,Addition of Bessacarr
+51,Dundee,51,157444,-340286.7276,7653671.702,,,,Dundee,
+52,York,52,153717,-123961.0094,7163443.078,34,4518,"York, Earswick",York,
+53,Gloucester,53,150053,-252275.8841,6775208.329,40.4,3718,"Gloucester, Innsworth",Gloucester-Cheltenham,
+54,Burnley,54,149422,-250425.1888,7130181.971,35.7,4183,"Burnley, Padiham, Brierfield Colne, Barrowford Nelson",Blackburn-Burnley,
+55,Basildon,57,144859,43629.73231,6724057.167,37.1,3902,"Basildon, Wickford, Ramsden Heath, North Benfleet",London,The addition of Wickford to the urban area.
+56,Grimsby,58,134160,-11891.12691,7088438.51,35.3,3804,"Grimsby, Cleethorpes, Waltham",Grimsby,New Waltham is no longer part of the Built-up area.
+57,Hastings,59,133422,62856.40023,6599340.867,33.2,4019,"Hastings, Bexhill",Hastings,
+58,High Wycombe,60,133204,-87666.81811,6735058.523,39.2,3398,"High Wycombe, Cookham, Hughenden Valley",London,
+59,Thanet,61,125370,140174.3375,6678303.867,27.9,4495,"Margate, Ramsgate, Broadstairs",Thanet,
+60,Accrington/Rossendale,62,125059,-274381.4113,7122059.475,30,4168,"Accrington, Rawtenstall, Bacup, Great Harwood, Haslingden, Oswaldtwistle",Blackburn-Burnley,Accrington Urban Area and Rossendale Urban Area combined.
+61,Burton-upon-Trent,63,122199,-183491.7085,6946860.319,35,3487,"Burton-upon-Trent, Swadlincote",Burton-upon-Trent,"The addition of Swadlincote, Stapenhill and Winshill[8]"
+62,Colchester,64,121859,99459.04075,6777830.148,32.7,3732,"Colchester, Marks Tey",Colchester,
+63,Eastbourne,65,118219,30777.68157,6580833.914,25.1,4705,"Eastbourne, Polegate",Brighton,
+64,Exeter,66,117763,-391592.1141,6566850.883,28.5,4133,"Exeter, Topsham",Exeter,
+65,Cheltenham,67,116447,-228319.6615,6781531.538,28.9,4034,"Cheltenham,",Gloucester-Cheltenham,
+66,Paignton/Torquay,68,115410,-398172.3641,6525724.32,31.5,3667,"Paignton, Torquay, Marldon",Torbay,
+67,Lincoln,69,114879,-62219.75763,7025463.462,32.7,3518,"Lincoln, North Hykeham",Lincoln,
+68,Chesterfield,70,113057,-159278.4449,7029576.118,34.6,3263,"Chesterfield, Staveley, Wingerworth, Holymoorside",Sheffield,Addition of Wingerworth to the Built-up area.
+69,Chelmsford,71,111511,51289.55456,6754850.681,26.2,4259,"Chelmsford, Little Waltham",London,
+70,Basingstoke,72,107642,-125554.6637,6669307.431,29.4,3662,Basingstoke,London,
+71,Maidstone,73,107627,56224.74204,6670129.963,25.4,4229,Maidstone,London,
+72,Bedford,74,106940,-53171.9139,6826410.9,24.8,4309,"Bedford, Kempston",Bedford,
+73,Worcester,75,-248934.3509,6837103.806,101659,24.7,4121,"Worcester, Norton",Worcester,
