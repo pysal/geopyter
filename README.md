@@ -41,6 +41,13 @@ At the core of GeoPyTeR are *atoms* which represent thematic content on a partic
 1. [GWR](.//README.md)
 1. [Hierarchical Modelling](.//README.md)
 
+## Depends 
+
+- GitPython (>= 2.0.6?)
+- BeautifulSoup4 (>= 4.5.1?)
+- Markdown (>= 2.6.7?)
+- nbformat (>= v4?)
+
 ## Contributing
 
 We invite any interested educator, researcher or developer to join the project. The content and structure of this teaching project itself is licensed under the [Creative Commons Attribution-ShareAlike 4.0 license][ccasa], and the contributing source code is licensed under The [MIT License][mit].
