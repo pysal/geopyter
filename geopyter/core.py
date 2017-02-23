@@ -322,14 +322,35 @@ for c in cell_types['markdown']:
     print( ", ".join([x.contents[0] for x in h3]))
 """
 
+class Cell(object):
+    """docstring for Cell"""
+    def __init__(self, nb,  idx):
+        #super(Cell, self).__init__()
+        self.nb = nb
+        self.idx = idx
+        if self.is_include():
+            self.cell_type='include'
+        else:
+            self.cell_type = self.nb.cells[idx].cell_type
+
+    def is_include(self):
+        """determine if this is an include cell"""
+        if "@include" in self.nb.cells[self.idx].source:
+            return True
+        return False
+
+
 class NoteBook(object):
     def __init__(self, ipynb):
         self.nb = read_nb(ipynb)
-        self.structure = self.get_structure()
+        self.cells = []
+        self.structure = self.__get_structure()
 
-    def get_structure(self):
+    def __get_structure(self):
         cell_types = defaultdict(list)
         for i, cell in enumerate(self.nb.cells):
+            cell = Cell(self.nb, i)
+            self.cells.append(cell)
             cell_types[cell.cell_type].append(i)
         return cell_types
 
