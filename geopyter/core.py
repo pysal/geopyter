@@ -137,7 +137,7 @@ class Cell(object):
         return self.nb.cells[self.idx].source
 
     def set_metadata(self, val, nm=None, namespace='geopyter'):
-        
+
         if namespace is None:
             self.nb.cells[self.idx].metadata[nm] = val
 
@@ -229,7 +229,8 @@ class NoteBook(object):
         cells = self.get_cells_by_id(idxs)
         pairs = zip(idxs, cells)
         for idx, cell in pairs:
-            source = cell['source']
+            #source = cell['source']
+            source = cell.source()
             # Delete code blocks -- this is a bit brutal
             # and it might be better to escape them in some
             # way... but this at least works well enough
@@ -372,7 +373,11 @@ class NoteBook(object):
                 for l in src.splitlines():
                     m = re.match("(?:\-|\*|\d+)\.? ([^\:]+?)\: (.+)", l)
                     if m is not None:
-                        val = map(unicode.strip, m.group(2).split(';'))
+                        try:
+                            val = map(unicode.strip, m.group(2).split(';'))
+                        except:
+                            val = [ s.strip() for s in m.group(2).split(';')]
+
                         if len(val)==1:
                             val = val[0]
                         meta[m.group(1)] = val
