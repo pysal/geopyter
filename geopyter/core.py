@@ -306,6 +306,9 @@ class Cell(object):
             else:
                 self.nb.cells[self.idx].metadata[namespace][nm] = val
 
+    def get_jp_cell(self):
+        """Return the cell from the jupyter notebook"""
+        return self.nb.cells[self.idx]
 
     def get_metadata(self, nm=None, namespace='geopyter'):
 
@@ -400,6 +403,72 @@ class NoteBook(object):
 
         return msg
 
+    def get_section(self, sections, p=None, start_end=None):
+        """Find sections for includes
+
+        Parameters
+        ===========
+        sections: string
+                  a section-subsection include definition
+
+        notebook: NoteBook
+
+        p: compiled reg ex for section identification
+
+        start_end: dict
+                   key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
+        """
+        if not p:
+            p = re.compile('h\d\.', re.IGNORECASE)
+        if not start_end:
+            start_end = section_start_end(self.nb)
+        iterator = p.finditer(sections)
+        starts = []
+        for match in iterator:
+            starts.append(match.span()[0]-1)
+        ends = starts[1:] + [len(sections)]
+        ijs = zip(starts, ends)
+        final = [sections[i:j].strip() for i,j in ijs]
+        includes = [section for section in final if section[0] != '-']
+        excludes = [section for section in final if section not in includes]
+        include_list = []
+        exclude_list = []
+        include_set = set()
+        exclude_set = set()
+        hlevel_dict = self.get_header_cells()
+
+        parent = includes[0]
+        parent_level, parent_pattern = parent.split(".")
+        candidates = hlevel_dict[int(parent_level[-1])]
+        parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=self)[0]
+        parent_start, parent_end, parent_level = start_end[parent_id]
+        parent_range = range(parent_start, parent_end)
+
+
+        # for h1 h12 get only section h12 of h1
+        if len(includes) > 1:
+            sections_ids = []
+            for section in includes[1:]:
+                section_level, section_pattern = section.split(".")
+                section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=self)[0]
+                section_start, section_end, section_level = start_end[section_id]
+                sections_ids.extend(range(section_start, section_end))
+            return sections_ids
+
+        # for h1 -h12 get all of h1 except section h12
+        if excludes:
+            excludes_ids = []
+            for exclude in excludes:
+                exclude_level, exclude_pattern = exclude.split(".")
+                exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=self)[0]
+                exclude_start, exclude_end, exclude_level = start_end[exclude_id]
+                excludes_ids.extend(range(exclude_start, exclude_end))
+            return [idx for idx in parent_range if idx not in excludes_ids]
+
+        return parent_range
+
+
+
     def structure(self):
         return self.structure
 
@@ -412,6 +481,10 @@ class NoteBook(object):
 
     def get_cells_by_id(self, ids=[]):
         return [self.cells[i] for i in ids]
+
+    def get_jp_cells_by_id(self, ids=[]):
+        return [self.cells[i].get_jp_cell() for i in ids]
+
 
     def get_header_cells(self):
         rh1 = re.compile('(?<!#)# ')
@@ -682,3 +755,39 @@ class NoteBook(object):
             self.libs = vlibs.copy()
 
         return self.libs
+
+    def compose(self):
+        """Compose a notebook from a composition notebook
+
+        Returns
+        =======
+        list: cells for the composed notebook
+        """
+
+        new_cells = []
+        for idx, cell in enumerate(self.cells):
+            if cell.cell_type == 'include':
+                nb_pth, sections = parse_include(cell.source())
+                nb_pth = "atoms/"+nb_pth.strip() # mock here for the atoms path
+                nb = NoteBook(nb_pth)
+                sections = sections.split(";")
+                for section in sections:
+                    ids = get_sections(section, nb)
+                    new_cells.extend(nb.get_jp_cells_by_id(ids))
+            else:
+                new_cells.append(cell.get_jp_cell())
+
+        return new_cells
+
+    def compile(self, nb_path):
+        """Compile notebook and save to nb_path
+
+        Parameters
+        ==========
+        nb_path: string
+                 file path for new notbook
+        """
+        nb = nbformat.v4.new_notebook()
+        nb.cells = self.compose()
+        with io.open(nb_path, 'w', encoding='utf8') as f:
+            nbformat.write(nb, f, nbformat.NO_CONVERT)
