@@ -116,6 +116,19 @@ for c in cell_types['markdown']:
     print( ", ".join([x.contents[0] for x in h3]))
 """
 
+credit_template = """
+### Credits!
+
+#### Contributors:
+The following individuals have contributed to these teaching materials: {{Contributors}}
+
+#### License
+These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
+
+#### Acknowledgements:
+We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
+"""
+
 class Cell(object):
     """docstring for Cell"""
     def __init__(self, nb,  idx):
@@ -222,31 +235,33 @@ class NoteBook(object):
 
         # Append the credits cell
         self.nb.cells.append(
-            nbformat.v4.new_markdown_cell(source=self.getCredits()))
+            nbformat.v4.new_markdown_cell(source=self.get_credits()))
 
         # Write raw notebook content
         with io.open(fn, 'w', encoding='utf8') as f:
             nbformat.write(self.nb, f, nbformat.NO_CONVERT)
 
-    def getCredits(self):
-        msg = "### Credits!\n\n"
+    def get_credits(self):
 
-        contribs = set()
+        msg = credit_template
 
-        for cell in self.cells:
-            map(contribs.add, cell.get_metadata('Contributors'))
+        for m in re.finditer("{{([^\}]+)}}", msg):
 
-        msg += "#### Contributors:\n"
-        msg += "The following contributors have helped to develop these teaching materials:\n"
-        msg += ", ".join(contribs)
-        msg += "\n"
+            contents = set()
 
-        msg += """
-#### License
-These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
-#### Acknowledgements:
-We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
-"""
+            for cell in self.cells:
+                mdata = cell.get_metadata(m.group(1))
+
+                if type(mdata) == str:
+                    contents.add(mdata)
+                elif type(mdata) == int:
+                    contents.add(mdata)
+                elif type(mdata) == list:
+                    map(contents.add, mdata)
+                else:
+                    print(type(mdata))
+
+            msg = re.sub("{{" + m.group(1) + "}}", ", ".join(contents), msg)
 
         return msg
 
