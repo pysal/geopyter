@@ -151,6 +151,25 @@ class Cell(object):
             else:
                 self.nb.cells[self.idx].metadata[namespace][nm] = val
 
+    def get_metadata(self, nm=None, namespace='geopyter'):
+
+        if namespace is None and nm is None:
+            # If the namespace has been deliberately set to None
+            # then return all of the notebook's metadata
+            return self.nb.metadata
+        elif namespace is None and self.nb.metadata.has_key(nm):
+            # Return a value from the notebook's metadata store
+            return self.nb.metadata[nm]
+        elif not self.nb.metadata.has_key(namespace):
+            # If the namespace doesn't exist then return None
+            return None
+        elif nm is None:
+            # If the name is set to None then return the whole namespace
+            return self.nb.metadata[namespace]
+        else:
+            # Otherwise, return exactly what was requested
+            return self.nb.metadata[namespace][nm]
+
 import re
 import nbformat
 import importlib
@@ -201,9 +220,35 @@ class NoteBook(object):
         if not fn.endswith('.ipynb'):
             fn += '.ipynb'
 
+        # Append the credits cell
+        self.nb.cells.append(
+            nbformat.v4.new_markdown_cell(source=self.getCredits()))
+
         # Write raw notebook content
         with io.open(fn, 'w', encoding='utf8') as f:
             nbformat.write(self.nb, f, nbformat.NO_CONVERT)
+
+    def getCredits(self):
+        msg = "### Credits!\n\n"
+
+        contribs = set()
+
+        for cell in self.cells:
+            map(contribs.add, cell.get_metadata('Contributors'))
+
+        msg += "#### Contributors:\n"
+        msg += "The following contributors have helped to develop these teaching materials:\n"
+        msg += ", ".join(contribs)
+        msg += "\n"
+
+        msg += """
+#### License
+These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
+#### Acknowledgements:
+We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
+"""
+
+        return msg
 
     def structure(self):
         return self.structure
