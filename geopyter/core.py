@@ -185,8 +185,6 @@ def section_start_end(notebook):
                 larger = [e for e in hs[p] if e > element and e < end]
                 if larger:
                     end = min(larger) - 1
-                    #print('higher')
-                    #print(k, element, start, end)
                 p -= 1
 
             mapping.append([start, end, k])
@@ -243,7 +241,7 @@ def get_sections(sections, notebook, p=None, start_end=None):
             section_level, section_pattern = section.split(".")
             section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=notebook)[0]
             section_start, section_end, section_level = start_end[section_id]
-            sections_ids.extend(range(section_start, section_end))
+            sections_ids.extend(range(section_start, section_end+1))
         return sections_ids
 
     # for h1 -h12 get all of h1 except section h12
@@ -253,7 +251,7 @@ def get_sections(sections, notebook, p=None, start_end=None):
             exclude_level, exclude_pattern = exclude.split(".")
             exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=notebook)[0]
             exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-            excludes_ids.extend(range(exclude_start, exclude_end))
+            excludes_ids.extend(range(exclude_start, exclude_end+1))
         return [idx for idx in parent_range if idx not in excludes_ids]
 
     return parent_range
