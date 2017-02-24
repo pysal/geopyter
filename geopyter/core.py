@@ -19,7 +19,6 @@ try:
 except:
     xrange = range
 
-
 def read_nb(nb, ext=True):
     """
     Read a notebook file and return a notebook object.
@@ -171,70 +170,6 @@ def section_start_end(notebook):
     mapping.sort()
     return dict([(key, [key, s,e]) for key, s, e in mapping])
 
-def dont_get_this_sections(sections, notebook, p=None, start_end=None):
-    """Find sections for includes
-
-    Parameters
-    ===========
-    sections: string
-              a section-subsection include definition
-
-    notebook: NoteBook
-
-    p: compiled reg ex for section identification
-
-    start_end: dict
-               key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
-    """
-    if not p:
-        p = re.compile('h\d\.', re.IGNORECASE)
-    if not start_end:
-        start_end = section_start_end(notebook)
-    iterator = p.finditer(sections)
-    starts = []
-    for match in iterator:
-        starts.append(match.span()[0]-1)
-    ends = starts[1:] + [len(sections)]
-    ijs = zip(starts, ends)
-    final = [sections[i:j].strip() for i,j in ijs]
-    includes = [section for section in final if section[0] != '-']
-    excludes = [section for section in final if section not in includes]
-    include_list = []
-    exclude_list = []
-    include_set = set()
-    exclude_set = set()
-    hlevel_dict = notebook.get_header_cells()
-
-    parent = includes[0]
-    parent_level, parent_pattern = parent.split(".")
-    candidates = hlevel_dict[int(parent_level[-1])]
-    parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=notebook)[0]
-    parent_start, parent_end, parent_level = start_end[parent_id]
-    parent_range = range(parent_start, parent_end)
-
-
-    # for h1 h12 get only section h12 of h1
-    if len(includes) > 1:
-        sections_ids = []
-        for section in includes[1:]:
-            section_level, section_pattern = section.split(".")
-            section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=notebook)[0]
-            section_start, section_end, section_level = start_end[section_id]
-            sections_ids.extend(range(section_start, section_end))
-        return sections_ids
-
-    # for h1 -h12 get all of h1 except section h12
-    if excludes:
-        excludes_ids = []
-        for exclude in excludes:
-            exclude_level, exclude_pattern = exclude.split(".")
-            exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=notebook)[0]
-            exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-            excludes_ids.extend(range(exclude_start, exclude_end))
-        return [idx for idx in parent_range if idx not in excludes_ids]
-
-    return parent_range
-
 credit_template = """
 ### Credits!
 
@@ -246,6 +181,9 @@ These teaching materials are licensed under a mix of the MIT and CC-BY licenses.
 
 #### Acknowledgements:
 We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
+
+#### Potential Dependencies:
+This notebook may depend on the following libraries: {{libs}}
 """
 
 class Cell(object):
@@ -401,10 +339,14 @@ class NoteBook(object):
                     contents.add(mdata)
                 elif type(mdata) == list:
                     map(contents.add, mdata)
+                elif type(mdata) == dict:
+                    map(contents.add, [ k + " (" + v + ")" for k, v in mdata.items()])
                 else:
                     print(type(mdata))
 
-            msg = re.sub("{{" + m.group(1) + "}}", ", ".join(contents), msg)
+            rs = list(contents)
+            rs.sort()
+            msg = re.sub("{{" + m.group(1) + "}}", ", ".join( rs ), msg)
 
         return msg
 
@@ -760,11 +702,54 @@ class NoteBook(object):
         return self.libs
 
     def compose_metadata(self):
+        """Return combined metadata from the source notebooks."""
+
+        for n in self.included_nbs.values():
+            try:
+                c1 = n.get_metadata("Contributors")
+                try:
+                    c2 = self.get_metadata("Contributors")
+                except KeyError:
+                    c2 = []
+                c1.extend(c2)
+                contribs = list(set(c1))
+                self.set_metadata(nm="Contributors", val=contribs)
+
+            except KeyError:
+                pass
+
+            try:
+                c1 = n.get_libs()
+                c2 = self.get_libs()
+
+                c1.update(c2)
+                self.set_metadata(nm="libs", val=c1)
+
+            except KeyError:
+                pass
+
         return self.nb['metadata']
 
     def compose_version(self):
-        #for nb in self.nbs.values():
-        return (self.nb['nbformat'], self.nb['nbformat_minor'])
+        """Return highest notebook version from the source notebooks."""
+        highest_major_v = 0
+        highest_minor_v = 0
+
+        for n in self.included_nbs.values():
+            if n.nb['nbformat'] > highest_major_v:
+                highest_major_v = n.nb['nbformat']
+                highest_minor_v = n.nb['nbformat_minor']
+            elif n.nb['nbformat'] > highest_major_v and n.nb['nbformat_minor'] > highest_minor_v:
+                highest_minor_v = n.nb['nbformat_minor']
+
+        n = self
+        if n.nb['nbformat'] > highest_major_v:
+            highest_major_v = n.nb['nbformat']
+            highest_minor_v = n.nb['nbformat_minor']
+        elif n.nb['nbformat'] >= highest_major_v and n.nb['nbformat_minor'] > highest_minor_v:
+            highest_minor_v = n.nb['nbformat_minor']
+
+        return (highest_major_v, highest_minor_v)
 
     def compose_content(self):
         """Compose a notebook from a composition notebook
@@ -814,7 +799,7 @@ class NoteBook(object):
 
         nb.metadata = self.compose_metadata() # Set the metadata details
 
-        #nb.format, nb.format_minor = self.compose_version() # Set the version info
+        nb.nbformat, nb.nbformat_minor = self.compose_version() # Set the version info
 
         nb.cells = self.compose_content() # Compose the notebook content
 
