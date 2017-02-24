@@ -3,6 +3,7 @@
 __author__  =   "Jonathan Reades and Serge Rey"
 
 import nbformat
+import os
 import io
 import re
 import nbformat
@@ -11,8 +12,7 @@ from git import Repo
 from git import InvalidGitRepositoryError
 from collections import defaultdict
 from datetime import datetime
-import os
-
+from urlparse import urlparse
 
 try:
     xrange
@@ -98,33 +98,6 @@ def clear_notebook(old_ipynb, new_ipynb):
     with io.open(new_ipynb, 'w', encoding='utf8') as f:
         nbformat.write(nb, f, nbformat.NO_CONVERT)
 
-def parse_include(include):
-    """Parse section-subsection include syntax
-
-    Parameters
-    ==========
-
-    include: string
-             src: path to notebook
-             select: section-subsections to extract
-
-
-    Returns
-    =======
-    tuple: (notebook_path, sections)
-        notebook_path: string
-        sections: string
-
-    Example
-    =======
-
-    """
-
-    include = include.split("\n")[1:-1]
-    nb = include[0].split("=")[1]
-    sections = include[1].split("=")[1]
-    return nb, sections
-
 def get_cells_containing(pattern, ids=None, notebook=None):
     """Find the ids of cells that contains a particular pattern
 
@@ -142,6 +115,7 @@ def get_cells_containing(pattern, ids=None, notebook=None):
     matches: list
              indices of cells containing the pattern.
     """
+
     if not ids:
         ids = range(len(nb.cells))
 
@@ -149,6 +123,9 @@ def get_cells_containing(pattern, ids=None, notebook=None):
     pairs = zip(ids, candidates)
     matches = []
     for i, cell in pairs:
+        #print("+" * 50)
+        #print("Pattern: " + pattern)
+        #print("Source:\n" + cell.source())
         if pattern in cell.source():
             matches.append(i)
     return matches
@@ -194,7 +171,7 @@ def section_start_end(notebook):
     mapping.sort()
     return dict([(key, [key, s,e]) for key, s, e in mapping])
 
-def get_sections(sections, notebook, p=None, start_end=None):
+def dont_get_this_sections(sections, notebook, p=None, start_end=None):
     """Find sections for includes
 
     Parameters
@@ -331,20 +308,48 @@ class Cell(object):
 
 class NoteBook(object):
     def __init__(self, ipynb):
-        self.nb = read_nb(ipynb)
-        self.nb_path = ipynb
+
+        m = re.search('^(.+?geopyter)', os.getcwd(), re.IGNORECASE)
+        if m:
+            self.base_dir = m.group(0)
+        else:
+            self.base_dir = '.'
+
+        try:
+            ipynb = unicode.strip(ipynb)
+        except:
+            ipynb = ipynb.strip()
+
+        path = ''
+        loc = urlparse(ipynb)
+        if loc.scheme in ('http','ftp'):
+            print("Haven't implemented remote files yet")
+        elif loc.path is not None:
+            print("Instantiating: " + ipynb)
+            if os.path.exists(ipynb):
+                path = ipynb
+            elif os.path.exists(os.path.join(self.base_dir,"atoms",ipynb)):
+                path = os.path.join(self.base_dir,"atoms",ipynb)
+            else:
+                print("Doesn't look like there's a file at: " + ipynb)
+        else:
+            print("Don't know what to do with this type of path info: " + ipynb)
+
+        self.nb = read_nb(path)
+        self.nb_path = path
         self.cells = []
+        self.included_nbs = {}
 
         cell_types = defaultdict(list)
         for i, c in enumerate(self.nb.cells):
             cell = Cell(self.nb, i)
-            cell.set_metadata(self.get_user_metadata().copy())
-            cell.set_metadata(nm='git', val=self.get_git_metadata().copy())
+            cell.set_metadata(self.get_user_metadata()) # Note: pass by ref (all cells get same metadata)
+            cell.set_metadata(nm='git', val=self.get_git_metadata()) # Note: pass by ref (all cells get same metadata)
             self.cells.append(cell)
             cell_types[cell.cell_type].append(i)
         self.structure = cell_types
-        self.set_metadata(self.get_user_metadata())
-        self.set_metadata(nm='libs', val=self.get_libs())
+        self.set_metadata(self.get_user_metadata().copy()) # Note: pass by copy (notebook can have different metadata)
+        self.set_metadata(nm='libs', val=self.get_libs().copy())
 
     def write(self, fn=None):
         """
@@ -365,7 +370,7 @@ class NoteBook(object):
         """
 
         if fn is None:
-            fn = re.sub('(\.ipynb)$','-compiled', self.nb_path)
+            fn = re.sub('(?:\.ipynb)?$','-compiled.ipynb', self.nb_path)
 
         # Append file extension
         if not fn.endswith('.ipynb'):
@@ -403,7 +408,7 @@ class NoteBook(object):
 
         return msg
 
-    def get_section(self, sections, p=None, start_end=None):
+    def get_section(self, selection, p=None, start_end=None):
         """Find sections for includes
 
         Parameters
@@ -419,31 +424,30 @@ class NoteBook(object):
                    key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
         """
         if not p:
-            p = re.compile('h\d\.', re.IGNORECASE)
+            p = re.compile('-?h\d\.', re.IGNORECASE)
         if not start_end:
-            start_end = section_start_end(self.nb)
-        iterator = p.finditer(sections)
+            start_end = section_start_end(self)
+
+        iterator = p.finditer(selection)
         starts = []
         for match in iterator:
-            starts.append(match.span()[0]-1)
-        ends = starts[1:] + [len(sections)]
+            starts.append(match.span()[0])
+        ends = starts[1:] + [len(selection)]
         ijs = zip(starts, ends)
-        final = [sections[i:j].strip() for i,j in ijs]
+        final = [selection[i:j].strip() for i,j in ijs]
+
         includes = [section for section in final if section[0] != '-']
         excludes = [section for section in final if section not in includes]
-        include_list = []
-        exclude_list = []
-        include_set = set()
-        exclude_set = set()
+
         hlevel_dict = self.get_header_cells()
 
         parent = includes[0]
         parent_level, parent_pattern = parent.split(".")
         candidates = hlevel_dict[int(parent_level[-1])]
+
         parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=self)[0]
         parent_start, parent_end, parent_level = start_end[parent_id]
         parent_range = range(parent_start, parent_end)
-
 
         # for h1 h12 get only section h12 of h1
         if len(includes) > 1:
@@ -484,7 +488,6 @@ class NoteBook(object):
 
     def get_jp_cells_by_id(self, ids=[]):
         return [self.cells[i].get_jp_cell() for i in ids]
-
 
     def get_header_cells(self):
         rh1 = re.compile('(?<!#)# ')
@@ -651,7 +654,7 @@ class NoteBook(object):
                         meta[m.group(1)] = val
                     else:
                         content += l + "\n"
-                self.user_metadata = meta.copy()
+                self.user_metadata = meta
                 self.nb.cells[0]['source'] = content
 
         return self.user_metadata
@@ -698,7 +701,7 @@ class NoteBook(object):
             rp['committed_date'] = datetime.fromtimestamp(hc.committed_date).strftime('%Y-%m-%d %H:%M:%S')
             rp['sha'] = hc.hexsha
 
-            self.repo = rp.copy()
+            self.repo = rp
 
         return self.repo
 
@@ -756,30 +759,33 @@ class NoteBook(object):
 
         return self.libs
 
-    def compose(self):
+    def compose_metadata(self):
+        return self.nb['metadata']
+
+    def compose_version(self):
+        #for nb in self.nbs.values():
+        return (self.nb['nbformat'], self.nb['nbformat_minor'])
+
+    def compose_content(self):
         """Compose a notebook from a composition notebook
 
         Returns
         =======
-        list: cells for the composed notebook
+        list: Jupyter-style cells for the composed notebook
         """
-
         new_cells = []
-        for idx, cell in enumerate(self.cells):
-            if cell.cell_type == 'include':
-                nb_pth, sections = parse_include(cell.source())
-                nb_pth = "atoms/"+nb_pth.strip() # mock here for the atoms path
-                nb = NoteBook(nb_pth)
-                sections = sections.split(";")
-                for section in sections:
-                    ids = get_sections(section, nb)
-                    new_cells.extend(nb.get_jp_cells_by_id(ids))
-            else:
+
+        for idx, cell in enumerate(self.cells): # For each geopyter cell
+            if cell.cell_type == 'include':     # If the type is include...
+                for section in cell.sections:
+                    ids = cell.notebook.get_section(section)
+                    new_cells.extend(cell.notebook.get_jp_cells_by_id(ids))
+            else:                               # Otherwise just write it out
                 new_cells.append(cell.get_jp_cell())
 
         return new_cells
 
-    def compile(self, nb_path):
+    def compile(self, comp_path):
         """Compile notebook and save to nb_path
 
         Parameters
@@ -787,7 +793,79 @@ class NoteBook(object):
         nb_path: string
                  file path for new notbook
         """
-        nb = nbformat.v4.new_notebook()
-        nb.cells = self.compose()
-        with io.open(nb_path, 'w', encoding='utf8') as f:
+
+        for idx, cell in enumerate(self.cells): # For each geopyter cell
+            if cell.cell_type == 'include':     # If the type is include...
+
+                # Parse the include statement and create a
+                # new geopyter notebook from this...
+                nb_path, sections = self.parse_include(cell.source())
+
+                # Create a new notebook from the URL
+                #########################
+                if nb_path not in self.included_nbs:
+                    my_nb = NoteBook(nb_path)
+                    self.included_nbs[nb_path] = my_nb
+
+                cell.notebook = self.included_nbs[nb_path]
+                cell.sections = sections
+
+        nb = nbformat.v4.new_notebook() # Create a new notebook
+
+        nb.metadata = self.compose_metadata() # Set the metadata details
+
+        #nb.format, nb.format_minor = self.compose_version() # Set the version info
+
+        nb.cells = self.compose_content() # Compose the notebook content
+
+        # Append the credits cell
+        nb.cells.append(
+            nbformat.v4.new_markdown_cell(source=self.get_credits()))
+
+        # Create any missing dirs
+        try:
+            os.makedirs(os.path.dirname(comp_path))
+        except OSError:
+            pass
+
+        # Write it out
+        print("Writing compiled notebook to: " + comp_path)
+        with io.open(comp_path, 'w', encoding='utf8') as f:
             nbformat.write(nb, f, nbformat.NO_CONVERT)
+
+    def parse_include(self, include):
+        """Parse section-subsection include syntax
+
+        Parameters
+        ==========
+
+        include: string
+                 src: path to notebook
+                 select: section-subsections to extract
+
+
+        Returns
+        =======
+        tuple: (notebook_path, sections)
+            notebook_path: string
+            sections: string
+
+        Example
+        =======
+
+        """
+
+        include  = include.split("\n")[1:-1]
+        nb       = include[0].split("=")[1]
+        sections = include[1].split("=")[1]
+
+        sections = sections.split(";")
+
+        try:
+            nb = unicode.strip(nb)
+            sections = map(unicode.strip, sections)
+        except:
+            nb = nb.strip()
+            sections = map(str.strip, sections)
+
+        return nb, sections
