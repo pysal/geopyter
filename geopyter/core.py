@@ -1,5 +1,18 @@
+"""geopyter core classes and functions"""
+
+__author__  =   "Jonathan Reades and Serge Rey"
+
 import nbformat
 import io
+import re
+import nbformat
+import importlib
+from git import Repo
+from git import InvalidGitRepositoryError
+from collections import defaultdict
+from datetime import datetime
+import os
+
 
 try:
     xrange
@@ -85,36 +98,165 @@ def clear_notebook(old_ipynb, new_ipynb):
     with io.open(new_ipynb, 'w', encoding='utf8') as f:
         nbformat.write(nb, f, nbformat.NO_CONVERT)
 
+def parse_include(include):
+    """Parse section-subsection include syntax
 
-import re
-"""
-import markdown
-from bs4 import BeautifulSoup
+    Parameters
+    ==========
 
-md = markdown.Markdown()
+    include: string
+             src: path to notebook
+             select: section-subsections to extract
 
-cell_types = get_nb_structure(nb)
 
-# Iterate over the code cell-types
-for c in cell_types['markdown']:
+    Returns
+    =======
+    tuple: (notebook_path, sections)
+        notebook_path: string
+        sections: string
 
-    # Delete code blocks -- this is a bit brutal
-    # and it might be better to escape them in some
-    # way... but this at least works well enough
-    src = re.sub(r'```.+?```', '', nb.cells[c]['source'], flags=re.S)
+    Example
+    =======
 
-    print("-"*20 + "New Cell" + "-"*20)
-    soup = BeautifulSoup(md.convert(src), 'html.parser')
+    """
 
-    h1 = soup.findAll('h1')
-    print( ", ".join([x.contents[0] for x in h1]))
+    include = include.split("\n")[1:-1]
+    nb = include[0].split("=")[1]
+    sections = include[1].split("=")[1]
+    return nb, sections
 
-    h2 = soup.findAll('h2')
-    print( ", ".join([x.contents[0] for x in h2]))
+def get_cells_containing(pattern, ids=None, notebook=None):
+    """Find the ids of cells that contains a particular pattern
 
-    h3 = soup.findAll('h3')
-    print( ", ".join([x.contents[0] for x in h3]))
-"""
+    Parameters
+    ==========
+    pattern: string
+
+    ids: list
+         indices of cells to search. If None, all cells in nb will be searched
+
+    notebook: NoteBook
+
+    Returns
+    =======
+    matches: list
+             indices of cells containing the pattern.
+    """
+    if not ids:
+        ids = range(len(nb.cells))
+
+    candidates = notebook.get_cells_by_id(ids)
+    pairs = zip(ids, candidates)
+    matches = []
+    for i, cell in pairs:
+        if pattern in cell.source():
+            matches.append(i)
+    return matches
+
+def section_start_end(notebook):
+    """Determine the start and end cells for all h level components of a NoteBook
+
+    Parameters
+    ==========
+    notebook: NoteBook
+
+    Returns
+    =======
+    dict:
+          key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
+    """
+    nb = notebook
+    n_cells = len(nb.nb.cells)
+    hs = nb.get_header_cells()
+    keys = list(hs.keys())
+    mapping = []
+    while keys:
+        k = keys.pop()
+        for element in hs[k]:
+            start = element
+            larger = [e for e in hs[k] if e > element]
+            if larger:
+                end = min(larger) - 1
+            else:
+                end = n_cells
+            # now check if there is a closer sup in the parent level
+            p = k - 1
+            while p > 0:
+                larger = [e for e in hs[p] if e > element and e < end]
+                if larger:
+                    end = min(larger) - 1
+                    #print('higher')
+                    #print(k, element, start, end)
+                p -= 1
+
+            mapping.append([start, end, k])
+
+    mapping.sort()
+    return dict([(key, [key, s,e]) for key, s, e in mapping])
+
+def get_sections(sections, notebook, p=None, start_end=None):
+    """Find sections for includes
+
+    Parameters
+    ===========
+    sections: string
+              a section-subsection include definition
+
+    notebook: NoteBook
+
+    p: compiled reg ex for section identification
+
+    start_end: dict
+               key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
+    """
+    if not p:
+        p = re.compile('h\d\.', re.IGNORECASE)
+    if not start_end:
+        start_end = section_start_end(notebook)
+    iterator = p.finditer(sections)
+    starts = []
+    for match in iterator:
+        starts.append(match.span()[0]-1)
+    ends = starts[1:] + [len(sections)]
+    ijs = zip(starts, ends)
+    final = [sections[i:j].strip() for i,j in ijs]
+    includes = [section for section in final if section[0] != '-']
+    excludes = [section for section in final if section not in includes]
+    include_list = []
+    exclude_list = []
+    include_set = set()
+    exclude_set = set()
+    hlevel_dict = notebook.get_header_cells()
+
+    parent = includes[0]
+    parent_level, parent_pattern = parent.split(".")
+    candidates = hlevel_dict[int(parent_level[-1])]
+    parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=notebook)[0]
+    parent_start, parent_end, parent_level = start_end[parent_id]
+    parent_range = range(parent_start, parent_end)
+
+
+    # for h1 h12 get only section h12 of h1
+    if len(includes) > 1:
+        sections_ids = []
+        for section in includes[1:]:
+            section_level, section_pattern = section.split(".")
+            section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=notebook)[0]
+            section_start, section_end, section_level = start_end[section_id]
+            sections_ids.extend(range(section_start, section_end))
+        return sections_ids
+
+    # for h1 -h12 get all of h1 except section h12
+    if excludes:
+        excludes_ids = []
+        for exclude in excludes:
+            exclude_level, exclude_pattern = exclude.split(".")
+            exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=notebook)[0]
+            exclude_start, exclude_end, exclude_level = start_end[exclude_id]
+            excludes_ids.extend(range(exclude_start, exclude_end))
+        return [idx for idx in parent_range if idx not in excludes_ids]
+
+    return parent_range
 
 credit_template = """
 ### Credits!
@@ -164,6 +306,7 @@ class Cell(object):
             else:
                 self.nb.cells[self.idx].metadata[namespace][nm] = val
 
+
     def get_metadata(self, nm=None, namespace='geopyter'):
 
         if namespace is None and nm is None:
@@ -183,14 +326,6 @@ class Cell(object):
             # Otherwise, return exactly what was requested
             return self.nb.metadata[namespace][nm]
 
-import re
-import nbformat
-import importlib
-from git import Repo
-from git import InvalidGitRepositoryError
-from collections import defaultdict
-from datetime import datetime
-import os
 class NoteBook(object):
     def __init__(self, ipynb):
         self.nb = read_nb(ipynb)
