@@ -1,4 +1,4 @@
-"""geopyter core classes and functions"""
+
 
 __author__  =   "Jonathan Reades and Serge Rey"
 
@@ -247,7 +247,7 @@ class Cell(object):
 class NoteBook(object):
     def __init__(self, ipynb):
 
-        m = re.search('^(.+?geopyter)', os.getcwd(), re.IGNORECASE)
+        m = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
         if m:
             self.base_dir = m.group(0)
         else:
