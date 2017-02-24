@@ -113,7 +113,8 @@ def parse_include(include):
     =======
     tuple: (notebook_path, sections)
         notebook_path: string
-        sections: string
+        sections: list of strings
+                 ["h1.title -h2.title", "h1.title2 h2.title2"]
 
     Example
     =======
@@ -123,6 +124,7 @@ def parse_include(include):
     include = include.split("\n")[1:-1]
     nb = include[0].split("=")[1]
     sections = include[1].split("=")[1]
+    sections = sections.split(";")
     return nb, sections
 
 def get_cells_containing(pattern, ids=None, notebook=None):
@@ -151,6 +153,9 @@ def get_cells_containing(pattern, ids=None, notebook=None):
     for i, cell in pairs:
         if pattern in cell.source():
             matches.append(i)
+    if not matches:
+        s="Warning: '%s' not found in %s"%(pattern, str(notebook))
+        print(s)
     return matches
 
 def section_start_end(notebook):
@@ -185,8 +190,6 @@ def section_start_end(notebook):
                 larger = [e for e in hs[p] if e > element and e < end]
                 if larger:
                     end = min(larger) - 1
-                    #print('higher')
-                    #print(k, element, start, end)
                 p -= 1
 
             mapping.append([start, end, k])
@@ -222,10 +225,6 @@ def get_sections(sections, notebook, p=None, start_end=None):
     final = [sections[i:j].strip() for i,j in ijs]
     includes = [section for section in final if section[0] != '-']
     excludes = [section for section in final if section not in includes]
-    include_list = []
-    exclude_list = []
-    include_set = set()
-    exclude_set = set()
     hlevel_dict = notebook.get_header_cells()
 
     parent = includes[0]
@@ -243,7 +242,7 @@ def get_sections(sections, notebook, p=None, start_end=None):
             section_level, section_pattern = section.split(".")
             section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=notebook)[0]
             section_start, section_end, section_level = start_end[section_id]
-            sections_ids.extend(range(section_start, section_end))
+            sections_ids.extend(range(section_start, section_end+1))
         return sections_ids
 
     # for h1 -h12 get all of h1 except section h12
@@ -253,7 +252,7 @@ def get_sections(sections, notebook, p=None, start_end=None):
             exclude_level, exclude_pattern = exclude.split(".")
             exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=notebook)[0]
             exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-            excludes_ids.extend(range(exclude_start, exclude_end))
+            excludes_ids.extend(range(exclude_start, exclude_end+1))
         return [idx for idx in parent_range if idx not in excludes_ids]
 
     return parent_range
@@ -411,8 +410,6 @@ class NoteBook(object):
         sections: string
                   a section-subsection include definition
 
-        notebook: NoteBook
-
         p: compiled reg ex for section identification
 
         start_end: dict
@@ -421,7 +418,7 @@ class NoteBook(object):
         if not p:
             p = re.compile('h\d\.', re.IGNORECASE)
         if not start_end:
-            start_end = section_start_end(self.nb)
+            start_end = section_start_end(self)
         iterator = p.finditer(sections)
         starts = []
         for match in iterator:
@@ -431,10 +428,6 @@ class NoteBook(object):
         final = [sections[i:j].strip() for i,j in ijs]
         includes = [section for section in final if section[0] != '-']
         excludes = [section for section in final if section not in includes]
-        include_list = []
-        exclude_list = []
-        include_set = set()
-        exclude_set = set()
         hlevel_dict = self.get_header_cells()
 
         parent = includes[0]
@@ -442,7 +435,7 @@ class NoteBook(object):
         candidates = hlevel_dict[int(parent_level[-1])]
         parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=self)[0]
         parent_start, parent_end, parent_level = start_end[parent_id]
-        parent_range = range(parent_start, parent_end)
+        parent_range = range(parent_start, parent_end+1)
 
 
         # for h1 h12 get only section h12 of h1
@@ -452,7 +445,7 @@ class NoteBook(object):
                 section_level, section_pattern = section.split(".")
                 section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=self)[0]
                 section_start, section_end, section_level = start_end[section_id]
-                sections_ids.extend(range(section_start, section_end))
+                sections_ids.extend(range(section_start, section_end+1))
             return sections_ids
 
         # for h1 -h12 get all of h1 except section h12
@@ -462,11 +455,10 @@ class NoteBook(object):
                 exclude_level, exclude_pattern = exclude.split(".")
                 exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=self)[0]
                 exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-                excludes_ids.extend(range(exclude_start, exclude_end))
+                excludes_ids.extend(range(exclude_start, exclude_end+1))
             return [idx for idx in parent_range if idx not in excludes_ids]
 
         return parent_range
-
 
 
     def structure(self):
@@ -770,7 +762,6 @@ class NoteBook(object):
                 nb_pth, sections = parse_include(cell.source())
                 nb_pth = "atoms/"+nb_pth.strip() # mock here for the atoms path
                 nb = NoteBook(nb_pth)
-                sections = sections.split(";")
                 for section in sections:
                     ids = get_sections(section, nb)
                     new_cells.extend(nb.get_jp_cells_by_id(ids))
