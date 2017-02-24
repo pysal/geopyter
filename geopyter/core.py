@@ -113,7 +113,8 @@ def parse_include(include):
     =======
     tuple: (notebook_path, sections)
         notebook_path: string
-        sections: string
+        sections: list of strings
+                 ["h1.title -h2.title", "h1.title2 h2.title2"]
 
     Example
     =======
@@ -123,6 +124,7 @@ def parse_include(include):
     include = include.split("\n")[1:-1]
     nb = include[0].split("=")[1]
     sections = include[1].split("=")[1]
+    sections = sections.split(";")
     return nb, sections
 
 def get_cells_containing(pattern, ids=None, notebook=None):
@@ -151,6 +153,9 @@ def get_cells_containing(pattern, ids=None, notebook=None):
     for i, cell in pairs:
         if pattern in cell.source():
             matches.append(i)
+    if not matches:
+        s="Warning: '%s' not found in %s"%(pattern, str(notebook))
+        print(s)
     return matches
 
 def section_start_end(notebook):
@@ -456,7 +461,6 @@ class NoteBook(object):
         return parent_range
 
 
-
     def structure(self):
         return self.structure
 
@@ -758,7 +762,6 @@ class NoteBook(object):
                 nb_pth, sections = parse_include(cell.source())
                 nb_pth = "atoms/"+nb_pth.strip() # mock here for the atoms path
                 nb = NoteBook(nb_pth)
-                sections = sections.split(";")
                 for section in sections:
                     ids = get_sections(section, nb)
                     new_cells.extend(nb.get_jp_cells_by_id(ids))
