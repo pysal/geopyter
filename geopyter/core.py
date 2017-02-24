@@ -682,3 +682,34 @@ class NoteBook(object):
             self.libs = vlibs.copy()
 
         return self.libs
+
+    def compose_notebook(self, composition_path):
+        """Compose a notebook from a composition notebook
+
+        Parameters
+        ==========
+
+        composition_path: string
+                          path to composition notebook
+
+
+        Returns
+        =======
+        list: cells for the composed notebook
+        """
+
+        composition_nb = NoteBook(composition_path)
+        new_cells = []
+        for idx, cell in enumerate(composition_nb.cells):
+            if cell.cell_type == 'include':
+                nb_pth, sections = parse_include(cell.source())
+                nb_pth = "atoms/"+nb_pth.strip() # mock here for the atoms path
+                nb = NoteBook(nb_pth)
+                sections = sections.split(";")
+                for section in sections:
+                    ids = get_sections(section, nb)
+                    new_cells.extend(nb.get_cells_by_id(ids))
+            else:
+                new_cells.append(cell)
+
+        return new_cells
