@@ -116,6 +116,19 @@ for c in cell_types['markdown']:
     print( ", ".join([x.contents[0] for x in h3]))
 """
 
+credit_template = """
+### Credits!
+
+#### Contributors:
+The following individuals have contributed to these teaching materials: {{Contributors}}
+
+#### License
+These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
+
+#### Acknowledgements:
+We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
+"""
+
 class Cell(object):
     """docstring for Cell"""
     def __init__(self, nb,  idx):
@@ -150,6 +163,25 @@ class Cell(object):
                 self.nb.cells[self.idx].metadata[namespace] = val
             else:
                 self.nb.cells[self.idx].metadata[namespace][nm] = val
+
+    def get_metadata(self, nm=None, namespace='geopyter'):
+
+        if namespace is None and nm is None:
+            # If the namespace has been deliberately set to None
+            # then return all of the notebook's metadata
+            return self.nb.metadata
+        elif namespace is None and self.nb.metadata.has_key(nm):
+            # Return a value from the notebook's metadata store
+            return self.nb.metadata[nm]
+        elif not self.nb.metadata.has_key(namespace):
+            # If the namespace doesn't exist then return None
+            return None
+        elif nm is None:
+            # If the name is set to None then return the whole namespace
+            return self.nb.metadata[namespace]
+        else:
+            # Otherwise, return exactly what was requested
+            return self.nb.metadata[namespace][nm]
 
 import re
 import nbformat
@@ -201,9 +233,37 @@ class NoteBook(object):
         if not fn.endswith('.ipynb'):
             fn += '.ipynb'
 
+        # Append the credits cell
+        self.nb.cells.append(
+            nbformat.v4.new_markdown_cell(source=self.get_credits()))
+
         # Write raw notebook content
         with io.open(fn, 'w', encoding='utf8') as f:
             nbformat.write(self.nb, f, nbformat.NO_CONVERT)
+
+    def get_credits(self):
+
+        msg = credit_template
+
+        for m in re.finditer("{{([^\}]+)}}", msg):
+
+            contents = set()
+
+            for cell in self.cells:
+                mdata = cell.get_metadata(m.group(1))
+
+                if type(mdata) == str:
+                    contents.add(mdata)
+                elif type(mdata) == int:
+                    contents.add(mdata)
+                elif type(mdata) == list:
+                    map(contents.add, mdata)
+                else:
+                    print(type(mdata))
+
+            msg = re.sub("{{" + m.group(1) + "}}", ", ".join(contents), msg)
+
+        return msg
 
     def structure(self):
         return self.structure
