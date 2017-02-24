@@ -127,6 +127,9 @@ def get_cells_containing(pattern, ids=None, notebook=None):
         #print("Source:\n" + cell.source())
         if pattern in cell.source():
             matches.append(i)
+    if not matches:
+         s="Warning: '%s' not found in %s"%(pattern, str(notebook))
+         print(s)
     return matches
 
 def section_start_end(notebook):
@@ -389,7 +392,7 @@ class NoteBook(object):
 
         parent_id = get_cells_containing(parent_pattern, ids=candidates, notebook=self)[0]
         parent_start, parent_end, parent_level = start_end[parent_id]
-        parent_range = range(parent_start, parent_end)
+        parent_range = range(parent_start, parent_end+1)
 
         # for h1 h12 get only section h12 of h1
         if len(includes) > 1:
@@ -398,7 +401,7 @@ class NoteBook(object):
                 section_level, section_pattern = section.split(".")
                 section_id = get_cells_containing(section_pattern, ids=parent_range, notebook=self)[0]
                 section_start, section_end, section_level = start_end[section_id]
-                sections_ids.extend(range(section_start, section_end))
+                sections_ids.extend(range(section_start, section_end+1))
             return sections_ids
 
         # for h1 -h12 get all of h1 except section h12
@@ -408,7 +411,7 @@ class NoteBook(object):
                 exclude_level, exclude_pattern = exclude.split(".")
                 exclude_id = get_cells_containing(exclude_pattern, ids=parent_range, notebook=self)[0]
                 exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-                excludes_ids.extend(range(exclude_start, exclude_end))
+                excludes_ids.extend(range(exclude_start, exclude_end+1))
             return [idx for idx in parent_range if idx not in excludes_ids]
 
         return parent_range
