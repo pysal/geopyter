@@ -117,7 +117,7 @@ class Cell(object):
     """docstring for Cell"""
     def __init__(self, nb,  idx):
         #super(Cell, self).__init__()
-        self.nb = nb
+        self.nb  = nb
         self.idx = idx
 
         if "@include" in self.nb.cells[self.idx].source:
@@ -136,7 +136,6 @@ class Cell(object):
                  src: path to notebook
                  select: section-subsections to extract
 
-
         Returns
         =======
         tuple: (notebook_path, sections)
@@ -145,7 +144,6 @@ class Cell(object):
 
         Example
         =======
-
         """
 
         include  = include.split("\n")[1:-1]
@@ -164,7 +162,7 @@ class Cell(object):
         return nb, sections
 
     def is_include(self):
-        """determine if this is an include cell"""
+        """Determine if this is an include cell"""
         if self.cell_type == 'include':
             return True
         else:
@@ -418,6 +416,23 @@ class NoteBook(object):
             return [idx for idx in parent_range if idx not in excludes_ids]
 
         return parent_range
+
+    def get_selection(self, sections):
+        new_cells = []
+        for s in sections:
+            print("Getting section from " + str(self) + ": " + s)
+            ids = self.get_section(s)
+            print(ids)
+            for i in ids:
+                c = self.get_cell_by_id(i)
+                if c.is_include():
+                    print("Here's the key!")
+                    print(c.sections)
+                    new_cells.extend(c.get_jp_cells())
+                else:
+                    new_cells.append(c.get_jp_cell())
+        print("Returning content from " + str(self.nb_path) + " with " + str(len(new_cells))) + " new cells"
+        return new_cells
 
     def structure(self):
         return self.structure
