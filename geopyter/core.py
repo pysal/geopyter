@@ -107,7 +107,7 @@ The following individuals have contributed to these teaching materials: {{Contri
 These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
 
 #### Acknowledgements:
-We'd like to acknowledge the contribution of the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) to this work.
+Supported by the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) (with the Institute of British Geographers) with a Ray Y Gildea Jr Award.
 
 #### Potential Dependencies:
 This notebook may depend on the following libraries: {{libs}}
