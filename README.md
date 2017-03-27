@@ -43,6 +43,7 @@ At the core of GeoPyTeR are *atoms* which represent thematic content on a partic
 
 ## Depends 
 
+- Python 2.7
 - GitPython (>= 2.0.6?)
 - BeautifulSoup4 (>= 4.5.1?)
 - Markdown (>= 2.6.7?)
