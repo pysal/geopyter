@@ -1,0 +1,34 @@
+# Run `conda-env create -f geopyter.yml`
+name: geopyter
+channels:
+  - ioos
+  - conda-forge
+dependencies:
+  - python=2.7
+  - gitpython 
+  - nbformat
+  - beautifulsoup4
+  - markdown
+  - pip
+  - geojson
+  - bokeh
+  - cartopy
+  - clusterpy
+  - dask
+  - geopandas
+  - ipython
+  - ipywidgets
+  - jupyter
+  - mplleaflet
+  - networkx
+  - palettable
+  - PIL
+  - pip:
+        - contextily
+  - qgrid
+  - rasterio
+  - scikit-learn
+  - seaborn
+  - statsmodels
+  - xlrd
+  - xlsxwriter
