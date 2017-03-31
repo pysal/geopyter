@@ -6,6 +6,7 @@ import nbformat
 import os
 import io
 import re
+import requests
 import nbformat
 import importlib
 from git import Repo
@@ -193,7 +194,7 @@ class Cell(object):
             for section in self.sections:
                 #print("Getting section from " + str(self.notebook.nb_path) + ": " + section)
                 ids = self.notebook.get_section(section)
-                print(ids)
+                #print(ids)
                 for i in ids:
                     new_cells.extend(self.notebook.get_cell_by_id(i).get_content())
 
@@ -241,8 +242,9 @@ class NoteBook(object):
 
         path = ''
         loc = urlparse(ipynb)
-        if loc.scheme in ('http','ftp'):
+        if loc.scheme in ('http','ftp','https'):
             print("Haven't implemented remote files yet")
+            #path = requests.get(loc)
         elif loc.path is not None:
             print("Instantiating: " + ipynb) # + " (" + str(self) + ")")
             if os.path.exists(ipynb):
@@ -368,7 +370,7 @@ class NoteBook(object):
         start_end: dict
                    key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
         """
-        print("get_section(" + selection + ")")
+        print("Retrieving selection: " + selection + ".")
         if not p:
             p = re.compile('-?h\d\.', re.IGNORECASE)
         if not start_end:
@@ -420,18 +422,18 @@ class NoteBook(object):
     def get_selection(self, sections):
         new_cells = []
         for s in sections:
-            print("Getting section from " + str(self) + ": " + s)
+            #print("Getting section from " + str(self) + ": " + s)
             ids = self.get_section(s)
-            print(ids)
+            #print(ids)
             for i in ids:
                 c = self.get_cell_by_id(i)
                 if c.is_include():
-                    print("Here's the key!")
-                    print(c.sections)
+                    #print("Here's the key!")
+                    #print(c.sections)
                     new_cells.extend(c.get_jp_cells())
                 else:
                     new_cells.append(c.get_jp_cell())
-        print("Returning content from " + str(self.nb_path) + " with " + str(len(new_cells))) + " new cells"
+        #print("Returning content from " + str(self.nb_path) + " with " + str(len(new_cells))) + " new cells"
         return new_cells
 
     def structure(self):
