@@ -366,6 +366,8 @@ class NoteBook(object):
 
             rs = list(contents)
             rs.sort()
+            if len(rs) == 0:
+                rs = ['None']
             msg = re.sub("{{" + m.group(1) + "}}", ", ".join( rs ), msg)
 
         return msg
@@ -834,6 +836,9 @@ class NoteBook(object):
         for n in self.included_nbs.values():
             try:
                 c1 = n.get_metadata("Contributors")
+                if isinstance(c1, str) or isinstance(c1, unicode):
+                    c1 = [c1]
+
                 try:
                     c2 = self.get_metadata("Contributors")
                     if isinstance(c2, str) or isinstance(c2, unicode):
