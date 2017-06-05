@@ -141,7 +141,7 @@ class Cell(object):
         =======
         tuple: (notebook_path, sections)
             notebook_path: string
-            sections: string
+            sections: string (or None for entire notebook)
 
         Example
         =======
@@ -149,16 +149,19 @@ class Cell(object):
 
         include  = include.split("\n")[1:-1]
         nb       = include[0].split("=")[1]
-        sections = include[1].split("=")[1]
-
-        sections = sections.split(";")
-
+        sections = None
         try:
-            nb = unicode.strip(nb)
-            sections = map(unicode.strip, sections)
-        except:
-            nb = nb.strip()
-            sections = map(str.strip, sections)
+            sections = include[1].split("=")[1]
+            sections = sections.split(";")
+
+            try:
+                nb = unicode.strip(nb)
+                sections = map(unicode.strip, sections)
+            except:
+                nb = nb.strip()
+                sections = map(str.strip, sections)
+        except IndexError:
+            pass
 
         return nb, sections
 
@@ -191,12 +194,18 @@ class Cell(object):
         """Return the compiled cells from the jupyter notebook"""
         if self.is_include():
             new_cells = []
-            for section in self.sections:
-                #print("Getting section from " + str(self.notebook.nb_path) + ": " + section)
-                ids = self.notebook.get_section(section)
-                #print(ids)
+            if self.sections is None:
+                print("Importing all of " + self.notebook.name)
+                ids = self.notebook.get_section(None)
                 for i in ids:
                     new_cells.extend(self.notebook.get_cell_by_id(i).get_content())
+            else:
+                for section in self.sections:
+                    print("Getting section from " + str(self.notebook.nb_path) + ": " + section)
+                    ids = self.notebook.get_section(section)
+                    #print(ids)
+                    for i in ids:
+                        new_cells.extend(self.notebook.get_cell_by_id(i).get_content())
 
             #print("Returning " + str(len(new_cells))) + " new cells"
             return new_cells
@@ -246,7 +255,6 @@ class NoteBook(object):
             print("Haven't implemented remote files yet")
             #path = requests.get(loc)
         elif loc.path is not None:
-            print("Instantiating: " + ipynb) # + " (" + str(self) + ")")
             if os.path.exists(ipynb):
                 path = ipynb
             elif os.path.exists(os.path.join(self.base_dir,"atoms",ipynb)):
@@ -255,6 +263,8 @@ class NoteBook(object):
                 print("Doesn't look like there's a file at: " + ipynb)
         else:
             print("Don't know what to do with this type of path info: " + ipynb)
+
+        print("Instantiating: " + ipynb) # + " (" + str(self) + ")")
 
         self.nb = read_nb(path)
         self.nb_path = path
@@ -335,19 +345,24 @@ class NoteBook(object):
 
             contents = set()
 
-            for cell in self.cells:
-                mdata = cell.get_metadata(m.group(1))
+            #print("Getting credits: " + m.group(1))
 
-                if type(mdata) == str:
-                    contents.add(mdata)
-                elif type(mdata) == int:
-                    contents.add(mdata)
-                elif type(mdata) == list:
-                    map(contents.add, mdata)
-                elif type(mdata) == dict:
-                    map(contents.add, [ k + " (" + v + ")" for k, v in mdata.items()])
-                else:
-                    print(type(mdata))
+            for cell in self.cells:
+                try:
+                    mdata = cell.get_metadata(m.group(1))
+
+                    if type(mdata) == str:
+                        contents.add(mdata)
+                    elif type(mdata) == int:
+                        contents.add(mdata)
+                    elif type(mdata) == list:
+                        map(contents.add, mdata)
+                    elif type(mdata) == dict:
+                        map(contents.add, [ k + " (" + v + ")" for k, v in mdata.items()])
+                    else:
+                        print(type(mdata))
+                except KeyError:
+                    pass
 
             rs = list(contents)
             rs.sort()
@@ -370,6 +385,9 @@ class NoteBook(object):
         start_end: dict
                    key is the cell idx of a particular h cell, value is a list [start cell, end cell, level]
         """
+        if selection is None:
+            return list(range(0, len(self.cells)))
+
         print("Retrieving selection: " + selection + ".")
         if not p:
             p = re.compile('-?h\d\.', re.IGNORECASE)
@@ -422,7 +440,7 @@ class NoteBook(object):
     def get_selection(self, sections):
         new_cells = []
         for s in sections:
-            #print("Getting section from " + str(self) + ": " + s)
+            print("Getting section from " + str(self) + ": " + s)
             ids = self.get_section(s)
             #print(ids)
             for i in ids:
@@ -539,6 +557,7 @@ class NoteBook(object):
             return self.nb.metadata[namespace]
         else:
             # Otherwise, return exactly what was requested
+            #print("Got it: " + str(self.nb.metadata[namespace][nm]))
             return self.nb.metadata[namespace][nm]
 
     def set_metadata(self, val, nm=None, namespace=u'geopyter'):
@@ -561,7 +580,6 @@ class NoteBook(object):
         =======
         Void.
         """
-
         if namespace is None:
             self.nb.metadata[nm] = val
 
@@ -620,7 +638,12 @@ class NoteBook(object):
 
                         if len(val)==1:
                             val = val[0]
+
+                        #print("Setting: meta[" + m.group(1) + "] = " + str(val))
                         meta[m.group(1)] = val
+                    elif re.match("\# ",l):
+                        self.name = l.replace("# ","")
+                        content += l + "\n"
                     else:
                         content += l + "\n"
                 self.user_metadata = meta
@@ -813,6 +836,8 @@ class NoteBook(object):
                 c1 = n.get_metadata("Contributors")
                 try:
                     c2 = self.get_metadata("Contributors")
+                    if isinstance(c2, str) or isinstance(c2, unicode):
+                        c2 = [c2]
                 except KeyError:
                     c2 = []
                 c1.extend(c2)
@@ -820,6 +845,7 @@ class NoteBook(object):
                 self.set_metadata(nm="Contributors", val=contribs)
 
             except KeyError:
+                print("No contributors found for: " + n.name)
                 pass
 
             try:
@@ -830,6 +856,7 @@ class NoteBook(object):
                 self.set_metadata(nm="libs", val=c1)
 
             except KeyError:
+                print("No libraries found for: " + n.name)
                 pass
 
         return self.nb['metadata']
