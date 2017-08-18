@@ -747,6 +747,7 @@ class NoteBook(object):
                     except AttributeError:
                         print("Unable to determine version for: " + l)
                         print("Currently we check <module>.__version__ and <module>.version")
+                        ver = "?"
                         pass
                 vlibs[l] = ver
             self.libs = vlibs.copy()
