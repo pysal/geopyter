@@ -1,0 +1,4 @@
+GitPython
+pysal
+scikit-learn
+seaborn
