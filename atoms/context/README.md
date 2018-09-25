@@ -1,9 +1,11 @@
 # Context
 
-These atoms are intended to provide useful material about *why* learning to code is useful to Geographers; they are distinguished from other content primarily by the fact that they are not directly about *using* a computer, but are instead about the *why*.
+These atoms are intended to provide useful contextual material for why learning to programme is a good idea, and how it fits into the larger history of geography.
 
 ## Notebooks
 
-- The Fall & Rise of Geocomputation
-- Why Learn to Code?
-- Learning a Language
+- [Programming and Geography](programming_and_geography.ipynb)
+- [Why Code?](why_code.ipynb)
+- [Learning a (New) Language](learning_a_language.ipynb)
+- [Learning Python](learning_python.ipynb)
+- [Delayed Gratification](delayed_gratification.ipynb)

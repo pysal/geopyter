@@ -4,6 +4,7 @@ This atom is intended to provide basica material about how a computer works, tog
 
 ## Notebooks
 
-- What's Going On in There?
-- The Unix Shell
-- Using Jupyter Notebooks
+- [What's Going On in There?](whats_going_on.ipynb)
+- [Navigating Your Computer with Code](paths.ipynb)
+- [The Unix Shell](unix_shell.ipynb)
+
