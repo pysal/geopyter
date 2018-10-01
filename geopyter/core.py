@@ -13,7 +13,8 @@ from git import Repo
 from git import InvalidGitRepositoryError
 from collections import defaultdict
 from datetime import datetime
-from urlparse import urlparse
+#from urlparse import urlparse
+from urllib.parse import urlparse
 
 try:
     xrange
@@ -155,8 +156,8 @@ class Cell(object):
             sections = sections.split(";")
 
             try:
-                nb = unicode.strip(nb)
-                sections = map(unicode.strip, sections)
+                nb = str.strip(nb)
+                sections = map(str.strip, sections)
             except:
                 nb = nb.strip()
                 sections = map(str.strip, sections)
@@ -222,10 +223,10 @@ class Cell(object):
             # If the namespace has been deliberately set to None
             # then return all of the notebook's metadata
             return self.nb.metadata
-        elif namespace is None and self.nb.metadata.has_key(nm):
+        elif namespace is None and nm in self.nb.metadata:
             # Return a value from the notebook's metadata store
             return self.nb.metadata[nm]
-        elif not self.nb.metadata.has_key(namespace):
+        elif not namespace in self.nb.metadata:
             # If the namespace doesn't exist then return None
             return None
         elif nm is None:
@@ -245,7 +246,7 @@ class NoteBook(object):
             self.base_dir = '.'
 
         try:
-            ipynb = unicode.strip(ipynb)
+            ipynb = str.strip(ipynb)
         except:
             ipynb = ipynb.strip()
 
@@ -253,7 +254,7 @@ class NoteBook(object):
         loc = urlparse(ipynb)
         if loc.scheme in ('http','ftp','https'):
             print("Haven't implemented remote files yet")
-            #path = requests.get(loc)
+            path = requests.get(loc)
         elif loc.path is not None:
             if os.path.exists(ipynb):
                 path = ipynb
@@ -548,10 +549,10 @@ class NoteBook(object):
             # If the namespace has been deliberately set to None
             # then return all of the notebook's metadata
             return self.nb.metadata
-        elif namespace is None and self.nb.metadata.has_key(nm):
+        elif namespace is None and nm in self.nb.metadata:
             # Return a value from the notebook's metadata store
             return self.nb.metadata[nm]
-        elif not self.nb.metadata.has_key(namespace):
+        elif not namespace in self.nb.metadata:
             # If the namespace doesn't exist then return None
             return None
         elif nm is None:
@@ -634,9 +635,10 @@ class NoteBook(object):
                     m = re.match("(?:\-|\*|\d+)\.? ([^\:]+?)\: (.+)", l)
                     if m is not None:
                         try:
-                            val = map(unicode.strip, m.group(2).split(';'))
+                            val = map(str.strip, m.group(2).split(';'))
                         except:
                             val = [ s.strip() for s in m.group(2).split(';')]
+                        val = list(val)    
 
                         if len(val)==1:
                             val = val[0]
@@ -837,12 +839,12 @@ class NoteBook(object):
         for n in self.included_nbs.values():
             try:
                 c1 = n.get_metadata("Contributors")
-                if isinstance(c1, str) or isinstance(c1, unicode):
+                if isinstance(c1, str) or isinstance(c1, str):
                     c1 = [c1]
 
                 try:
                     c2 = self.get_metadata("Contributors")
-                    if isinstance(c2, str) or isinstance(c2, unicode):
+                    if isinstance(c2, str) or isinstance(c2, str):
                         c2 = [c2]
                 except KeyError:
                     c2 = []
