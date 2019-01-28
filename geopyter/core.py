@@ -13,14 +13,22 @@ from git import Repo
 from git import InvalidGitRepositoryError
 from collections import defaultdict
 from datetime import datetime
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 try:
     xrange
 except:
     xrange = range
 
-def read_nb(nb, ext=True):
+def get_base_dir(base_dir='.'):
+
+    m = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
+    if m:
+        base_dir = m.group(0)
+    
+    return base_dir
+
+def read_nb(nb_src, ext=True):
     """
     Read a notebook file and return a notebook object.
 
@@ -39,15 +47,40 @@ def read_nb(nb, ext=True):
     =======
     An object of class nbformat.notebooknode.NotebookNode
     """
-
+    
     # Append file extension if missing and ext is True
-    if not nb.endswith('.ipynb') and ext is True:
-        nb += '.ipynb'
+    if not nb_src.endswith('.ipynb') and ext is True:
+        nb_src += '.ipynb'
+    
+    nb = None
 
-    # Read-only in UTF-8, note NO_CONVERT.
-    with io.open(nb, 'r', encoding='utf8') as f:
-        nb = nbformat.read(f, nbformat.NO_CONVERT)
+    loc = urlparse(nb_src)
+    if loc.scheme in ('http','ftp','https'):
+        # This doesn't support credentialed access at this time
+        # -- partly because it's a pain, and partly because you
+        # should be sharing and making things open... :-)
+        nbd = requests.get(nb_src).text
+        
+        # Read-only in UTF-8, note NO_CONVERT.
+        with io.StringIO(nbd) as f:
+            nb = nbformat.read(f, nbformat.NO_CONVERT)
+        
+    elif os.path.exists(nb_src):
+        # Read-only in UTF-8, note NO_CONVERT.
+        with open(nb_src, 'r', encoding='utf8') as f:
+            nb = nbformat.read(f, nbformat.NO_CONVERT)
 
+    elif os.path.exists(os.path.join(get_base_dir(),"atoms",nb_src)):
+        # Read-only in UTF-8, note NO_CONVERT.
+        with open(os.path.join(get_base_dir(),"atoms",nb_src), 'r', encoding='utf8') as f:
+            nb = nbformat.read(f, nbformat.NO_CONVERT)
+        
+    else:
+        print("Couldn't find or process notebook file at: " + nb_src)
+    
+    if nb is not None:
+        nb.metadata['path'] = nb_src
+    
     return nb
 
 def dump_nb(nb, cells=5, lines=5):
@@ -154,12 +187,8 @@ class Cell(object):
             sections = include[1].split("=")[1]
             sections = sections.split(";")
 
-            try:
-                nb = unicode.strip(nb)
-                sections = map(unicode.strip, sections)
-            except:
-                nb = nb.strip()
-                sections = map(str.strip, sections)
+            nb = nb.strip()
+            sections = map(str.strip, sections)
         except IndexError:
             pass
 
@@ -222,10 +251,10 @@ class Cell(object):
             # If the namespace has been deliberately set to None
             # then return all of the notebook's metadata
             return self.nb.metadata
-        elif namespace is None and self.nb.metadata.has_key(nm):
+        elif namespace is None and nm in self.nb.metadata:
             # Return a value from the notebook's metadata store
             return self.nb.metadata[nm]
-        elif not self.nb.metadata.has_key(namespace):
+        elif namespace not in self.nb.metadata:
             # If the namespace doesn't exist then return None
             return None
         elif nm is None:
@@ -238,36 +267,14 @@ class Cell(object):
 class NoteBook(object):
     def __init__(self, ipynb):
 
-        m = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
-        if m:
-            self.base_dir = m.group(0)
-        else:
-            self.base_dir = '.'
+        ipynb = ipynb.strip()
 
-        try:
-            ipynb = unicode.strip(ipynb)
-        except:
-            ipynb = ipynb.strip()
-
-        path = ''
-        loc = urlparse(ipynb)
-        if loc.scheme in ('http','ftp','https'):
-            print("Haven't implemented remote files yet")
-            #path = requests.get(loc)
-        elif loc.path is not None:
-            if os.path.exists(ipynb):
-                path = ipynb
-            elif os.path.exists(os.path.join(self.base_dir,"atoms",ipynb)):
-                path = os.path.join(self.base_dir,"atoms",ipynb)
-            else:
-                print("Doesn't look like there's a file at: " + ipynb)
-        else:
-            print("Don't know what to do with this type of path info: " + ipynb)
+        self.base_dir = get_base_dir()
 
         print("Instantiating: " + ipynb) # + " (" + str(self) + ")")
+        self.nb = read_nb(ipynb)
 
-        self.nb = read_nb(path)
-        self.nb_path = path
+        self.nb_path = self.nb.metadata['path'] # Path needs to come from the notebook object
         self.cells = []
         self.included_nbs = {}
 
@@ -360,7 +367,8 @@ class NoteBook(object):
                     elif type(mdata) == dict:
                         map(contents.add, [ k + " (" + v + ")" for k, v in mdata.items()])
                     else:
-                        print(type(mdata))
+                        pass
+                        #print(type(mdata))
                 except KeyError:
                     pass
 
@@ -548,10 +556,10 @@ class NoteBook(object):
             # If the namespace has been deliberately set to None
             # then return all of the notebook's metadata
             return self.nb.metadata
-        elif namespace is None and self.nb.metadata.has_key(nm):
+        elif namespace is None and nm in self.nb.metadata:
             # Return a value from the notebook's metadata store
             return self.nb.metadata[nm]
-        elif not self.nb.metadata.has_key(namespace):
+        elif namespace not in self.nb.metadata:
             # If the namespace doesn't exist then return None
             return None
         elif nm is None:
@@ -633,10 +641,8 @@ class NoteBook(object):
                 for l in src.splitlines():
                     m = re.match("(?:\-|\*|\d+)\.? ([^\:]+?)\: (.+)", l)
                     if m is not None:
-                        try:
-                            val = map(unicode.strip, m.group(2).split(';'))
-                        except:
-                            val = [ s.strip() for s in m.group(2).split(';')]
+                        
+                        val = [ s.strip() for s in m.group(2).split(';')]
 
                         if len(val)==1:
                             val = val[0]
@@ -837,12 +843,12 @@ class NoteBook(object):
         for n in self.included_nbs.values():
             try:
                 c1 = n.get_metadata("Contributors")
-                if isinstance(c1, str) or isinstance(c1, unicode):
+                if isinstance(c1, str):
                     c1 = [c1]
 
                 try:
                     c2 = self.get_metadata("Contributors")
-                    if isinstance(c2, str) or isinstance(c2, unicode):
+                    if isinstance(c2, str):
                         c2 = [c2]
                 except KeyError:
                     c2 = []
