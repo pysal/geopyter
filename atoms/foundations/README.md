@@ -20,14 +20,17 @@ f = ps.open(os.path.join(ps.examples.example_dir, 'us_income/usjoin.csv'))
 
 You are always free to import as much or as little of the atom as you need, but the intended sequence for the materials is:
 
-| Session | Contributors |
-| ---- | ---- | 
-| 1. [Getting Started: Thinking Like a Computer](Getting_Started.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) |
-| 2. [The Basics](Basics.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 3. [Dealing with Errors & Debugging](Debugging.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 4. [Truth with Conditions](Conditions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 5. [Lists](Lists.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 6. [Dictionaries](Dictionaries.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 7. [Loops and Iteration](Iteration.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
-| 8. [Introduction to Functions](Functions.ipynb) | [Michele Ferretti](https://github.com/miccferr), [Jon Reades](https://github.com/jreades), [James Millington](https://github.com/jamesdamillington) | 
+- [Why Learn to Code?](Why_Code.ipynb)
+- [Programming and Geography](Programming_and_Geography.ipynb)
+- [Learning a (New) Language](Learning_a_Language.ipynb)
+- [Programming in Python](Programming_in_Python.ipynb)
+- [A Brief Note about Jupyter](Jupyter.ipynb)
+- [Thinking Like a Computer](Getting_Started.ipynb)
+- [The Basics](Basics.ipynb)
+- [Dealing with Errors & Debugging](Debugging.ipynb)
+- [Conditions](Conditions.ipynb) 
+- [Lists](Lists.ipynb) 
+- [Dictionaries](Dictionaries.ipynb) 
+- [Iteration](Iteration.ipynb) 
+- [Functions](Functions.ipynb) 
 
