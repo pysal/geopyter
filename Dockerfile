@@ -31,7 +31,8 @@ RUN conda install -c conda-forge -c defaults --quiet --yes \
   'xlrd'\
   'xlsxwriter'
 
-RUN pip install -U --no-deps gitpython geopy markdown nbdime  nbformat polyline pysal
+RUN pip install -U gitpython geopy markdown nbdime  nbformat polyline pysal
+RUN pip install gitdb
 
 
 # Switch back to user to avoid accidental container runs as root
