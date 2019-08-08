@@ -25,7 +25,6 @@ def get_base_dir(base_dir='.'):
     m = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
     if m:
         base_dir = m.group(0)
-    
     return base_dir
 
 def read_nb(nb_src, ext=True):
@@ -641,9 +640,7 @@ class NoteBook(object):
                 for l in src.splitlines():
                     m = re.match("(?:\-|\*|\d+)\.? ([^\:]+?)\: (.+)", l)
                     if m is not None:
-                        
                         val = [ s.strip() for s in m.group(2).split(';')]
-
                         if len(val)==1:
                             val = val[0]
 
