@@ -136,7 +136,7 @@ credit_template = """
 ### Credits!
 
 #### Contributors:
-The following individuals have contributed to these teaching materials: {{Contributors}}
+The following individuals have contributed to these teaching materials: $Contributors
 
 #### License
 These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
@@ -145,7 +145,7 @@ These teaching materials are licensed under a mix of the MIT and CC-BY licenses.
 Supported by the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) (with the Institute of British Geographers) with a Ray Y Gildea Jr Award.
 
 #### Potential Dependencies:
-This notebook may depend on the following libraries: {{libs}}
+This notebook may depend on the following libraries: $libs
 """
 
 
@@ -183,7 +183,6 @@ class Cell(object):
         Example
         =======
         """
-
         include = include.split("\n")[1:-1]
         nb = include[0].split("=")[1]
         sections = None
@@ -358,14 +357,23 @@ class NoteBook(object):
             nbformat.write(nb, f, nbformat.NO_CONVERT)
 
     def get_credits(self):
-
+        from string import Template
         msg = credit_template
+        metadata = self.compose_metadata()
+        metadata = metadata['geopyter']
+        contributors = metadata['Contributors']
+        contributors = ",\n".join(contributors)
+        libs = metadata['libs']
+        libs = ",\n".join([ '{}: {}'.format(k,v) for k,v in libs.items()])
+        s = Template(msg)
+        msg = s.substitute(Contributors=contributors, libs=libs)
+        """
 
         for m in re.finditer("{{([^\}]+)}}", msg):
 
             contents = set()
 
-            #print("Getting credits: " + m.group(1))
+            print("Getting credits: " + m.group(1))
 
             for cell in self.cells:
                 try:
@@ -391,6 +399,7 @@ class NoteBook(object):
             if len(rs) == 0:
                 rs = ['None']
             msg = re.sub("{{" + m.group(1) + "}}", ", ".join(rs), msg)
+        """
 
         return msg
 
@@ -777,7 +786,6 @@ class NoteBook(object):
                             "Currently we check <module>.__version__ and <module>.version"
                         )
                         ver = "?"
-                        pass
                 vlibs[l] = ver
             self.libs = vlibs.copy()
 
@@ -937,13 +945,10 @@ class NoteBook(object):
         return new_cells
 
     def compile(self):
-        """Compile notebook and save to nb_path
+        """Compile notebook
 
-        Parameters
-        ==========
-        nb_path: string
-                 file path for new notbook
-        """
+
+        No parameters are passed. This sets the `compiled` attribute."""
 
         nb = nbformat.v4.new_notebook()  # Create a new notebook
 
