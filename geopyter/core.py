@@ -1,13 +1,10 @@
-
-
-__author__  =   "Jonathan Reades and Serge Rey"
+__author__ = "Jonathan Reades and Serge Rey"
 
 import nbformat
 import os
 import io
 import re
 import requests
-import nbformat
 import importlib
 from git import Repo
 from git import InvalidGitRepositoryError
@@ -15,17 +12,15 @@ from collections import defaultdict
 from datetime import datetime
 from urllib.parse import urlparse
 
-try:
-    xrange
-except:
-    xrange = range
 
 def get_base_dir(base_dir='.'):
+    "Get base directory"
 
-    m = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
-    if m:
-        base_dir = m.group(0)
+    match = re.search('^(.+geopyter)', os.getcwd(), re.IGNORECASE)
+    if match:
+        base_dir = match.group(0)
     return base_dir
+
 
 def read_nb(nb_src, ext=True):
     """
@@ -46,41 +41,45 @@ def read_nb(nb_src, ext=True):
     =======
     An object of class nbformat.notebooknode.NotebookNode
     """
-    
+
     # Append file extension if missing and ext is True
     if not nb_src.endswith('.ipynb') and ext is True:
         nb_src += '.ipynb'
-    
+
     nb = None
 
     loc = urlparse(nb_src)
-    if loc.scheme in ('http','ftp','https'):
+    if loc.scheme in ('http', 'ftp', 'https'):
         # This doesn't support credentialed access at this time
         # -- partly because it's a pain, and partly because you
         # should be sharing and making things open... :-)
         nbd = requests.get(nb_src).text
-        
+
         # Read-only in UTF-8, note NO_CONVERT.
         with io.StringIO(nbd) as f:
             nb = nbformat.read(f, nbformat.NO_CONVERT)
-        
+
     elif os.path.exists(nb_src):
         # Read-only in UTF-8, note NO_CONVERT.
         with open(nb_src, 'r', encoding='utf8') as f:
             nb = nbformat.read(f, nbformat.NO_CONVERT)
 
-    elif os.path.exists(os.path.join(get_base_dir(),"atoms",nb_src)):
+    elif os.path.exists(os.path.join(get_base_dir(), "atoms", nb_src)):
         # Read-only in UTF-8, note NO_CONVERT.
-        with open(os.path.join(get_base_dir(),"atoms",nb_src), 'r', encoding='utf8') as f:
+        with open(
+                os.path.join(get_base_dir(), "atoms", nb_src),
+                'r',
+                encoding='utf8') as f:
             nb = nbformat.read(f, nbformat.NO_CONVERT)
-        
+
     else:
         print("Couldn't find or process notebook file at: " + nb_src)
-    
+
     if nb is not None:
         nb.metadata['path'] = nb_src
-    
+
     return nb
+
 
 def dump_nb(nb, cells=5, lines=5):
     """
@@ -101,25 +100,27 @@ def dump_nb(nb, cells=5, lines=5):
     """
 
     # For the cell-range specified
-    for c in xrange(0, cells):
+    for cell in range(0, cells):
 
         # Check we still have cells to read
-        if c < len(nb.cells):
+        if cell < len(nb.cells):
 
             # And dump the contents to STDOUT
-            print("====== " + nb.cells[c]['cell_type'] + " ======")
-            src = nb.cells[c]['source'].splitlines()
+            print("====== " + nb.cells[cell]['cell_type'] + " ======")
+            src = nb.cells[cell]['source'].splitlines()
             if len(src) > lines:
                 print('\n'.join(src[0:lines]))
                 print("...")
             else:
-                print(nb.cells[c]['source'])
+                print(nb.cells[cell]['source'])
+
 
 def remove_outputs(nb):
     """Set output attribute of all code cells to be empty"""
     for cell in nb.cells:
         if cell.cell_type == 'code':
             cell.outputs = []
+
 
 def clear_notebook(old_ipynb, new_ipynb):
     with io.open(old_ipynb, 'r') as f:
@@ -130,11 +131,12 @@ def clear_notebook(old_ipynb, new_ipynb):
     with io.open(new_ipynb, 'w', encoding='utf8') as f:
         nbformat.write(nb, f, nbformat.NO_CONVERT)
 
+
 credit_template = """
 ### Credits!
 
 #### Contributors:
-The following individuals have contributed to these teaching materials: {{Contributors}}
+The following individuals have contributed to these teaching materials: $Contributors
 
 #### License
 These teaching materials are licensed under a mix of the MIT and CC-BY licenses...
@@ -143,19 +145,22 @@ These teaching materials are licensed under a mix of the MIT and CC-BY licenses.
 Supported by the [Royal Geographical Society](https://www.rgs.org/HomePage.htm) (with the Institute of British Geographers) with a Ray Y Gildea Jr Award.
 
 #### Potential Dependencies:
-This notebook may depend on the following libraries: {{libs}}
+This notebook may depend on the following libraries: $libs
 """
+
 
 class Cell(object):
     """docstring for Cell"""
-    def __init__(self, nb,  idx):
+
+    def __init__(self, nb, idx):
         #super(Cell, self).__init__()
-        self.nb  = nb
+        self.nb = nb
         self.idx = idx
 
         if "@include" in self.nb.cells[self.idx].source:
-            self.cell_type='include'
-            self.included_nb, self.sections = self.parse_include(self.nb.cells[self.idx].source)
+            self.cell_type = 'include'
+            self.included_nb, self.sections = self.parse_include(
+                self.nb.cells[self.idx].source)
         else:
             self.cell_type = self.nb.cells[idx].cell_type
 
@@ -178,9 +183,8 @@ class Cell(object):
         Example
         =======
         """
-
-        include  = include.split("\n")[1:-1]
-        nb       = include[0].split("=")[1]
+        include = include.split("\n")[1:-1]
+        nb = include[0].split("=")[1]
         sections = None
         try:
             sections = include[1].split("=")[1]
@@ -226,18 +230,21 @@ class Cell(object):
                 print("Importing all of " + self.notebook.name)
                 ids = self.notebook.get_section(None)
                 for i in ids:
-                    new_cells.extend(self.notebook.get_cell_by_id(i).get_content())
+                    new_cells.extend(
+                        self.notebook.get_cell_by_id(i).get_content())
             else:
                 for section in self.sections:
-                    print("Getting section from " + str(self.notebook.nb_path) + ": " + section)
+                    print("Getting section from " +
+                          str(self.notebook.nb_path) + ": " + section)
                     ids = self.notebook.get_section(section)
                     #print(ids)
                     for i in ids:
-                        new_cells.extend(self.notebook.get_cell_by_id(i).get_content())
+                        new_cells.extend(
+                            self.notebook.get_cell_by_id(i).get_content())
 
             #print("Returning " + str(len(new_cells))) + " new cells"
             return new_cells
-        else: # In case there is something odd about the cell -- always return a list
+        else:  # In case there is something odd about the cell -- always return a list
             return [self.nb.cells[self.idx]]
 
     def get_jp_cell(self):
@@ -263,6 +270,7 @@ class Cell(object):
             # Otherwise, return exactly what was requested
             return self.nb.metadata[namespace][nm]
 
+
 class NoteBook(object):
     def __init__(self, ipynb):
 
@@ -270,20 +278,24 @@ class NoteBook(object):
 
         self.base_dir = get_base_dir()
 
-        print("Instantiating: " + ipynb) # + " (" + str(self) + ")")
+        print("Instantiating: " + ipynb)  # + " (" + str(self) + ")")
         self.nb = read_nb(ipynb)
 
-        self.nb_path = self.nb.metadata['path'] # Path needs to come from the notebook object
+        self.nb_path = self.nb.metadata[
+            'path']  # Path needs to come from the notebook object
         self.cells = []
         self.included_nbs = {}
 
         self.structure = defaultdict(list)
         for i, c in enumerate(self.nb.cells):
             cell = Cell(self.nb, i)
-            cell.set_metadata(self.get_user_metadata()) # Note: pass by ref (all cells get same metadata)
-            cell.set_metadata(nm='git', val=self.get_git_metadata()) # Note: pass by ref (all cells get same metadata)
+            cell.set_metadata(self.get_user_metadata(
+            ))  # Note: pass by ref (all cells get same metadata)
+            cell.set_metadata(
+                nm='git', val=self.get_git_metadata()
+            )  # Note: pass by ref (all cells get same metadata)
 
-            if cell.is_include(): # If the type is include...
+            if cell.is_include():  # If the type is include...
 
                 # Create a new notebook from the URL
                 # and stash a reference on the cell
@@ -296,7 +308,8 @@ class NoteBook(object):
             self.cells.append(cell)
             self.structure[cell.cell_type].append(i)
 
-        self.set_metadata(self.get_user_metadata().copy()) # Note: pass by copy (notebook can have different metadata)
+        self.set_metadata(self.get_user_metadata().copy(
+        ))  # Note: pass by copy (notebook can have different metadata)
         self.set_metadata(nm='libs', val=self.get_libs().copy())
 
     def write(self, fn=None, nb=None):
@@ -319,7 +332,7 @@ class NoteBook(object):
 
         # Simple default behaviour
         if fn is None:
-            fn = re.sub('(?:\.ipynb)?$','-compiled.ipynb', self.nb_path)
+            fn = re.sub('(?:\.ipynb)?$', '-compiled.ipynb', self.nb_path)
 
         # Append file extension
         if not fn.endswith('.ipynb'):
@@ -344,14 +357,23 @@ class NoteBook(object):
             nbformat.write(nb, f, nbformat.NO_CONVERT)
 
     def get_credits(self):
-
+        from string import Template
         msg = credit_template
+        metadata = self.compose_metadata()
+        metadata = metadata['geopyter']
+        contributors = metadata['Contributors']
+        contributors = ",\n".join(contributors)
+        libs = metadata['libs']
+        libs = ",\n".join([ '{}: {}'.format(k,v) for k,v in libs.items()])
+        s = Template(msg)
+        msg = s.substitute(Contributors=contributors, libs=libs)
+        """
 
         for m in re.finditer("{{([^\}]+)}}", msg):
 
             contents = set()
 
-            #print("Getting credits: " + m.group(1))
+            print("Getting credits: " + m.group(1))
 
             for cell in self.cells:
                 try:
@@ -364,7 +386,8 @@ class NoteBook(object):
                     elif type(mdata) == list:
                         map(contents.add, mdata)
                     elif type(mdata) == dict:
-                        map(contents.add, [ k + " (" + v + ")" for k, v in mdata.items()])
+                        map(contents.add,
+                            [k + " (" + v + ")" for k, v in mdata.items()])
                     else:
                         pass
                         #print(type(mdata))
@@ -375,7 +398,8 @@ class NoteBook(object):
             rs.sort()
             if len(rs) == 0:
                 rs = ['None']
-            msg = re.sub("{{" + m.group(1) + "}}", ", ".join( rs ), msg)
+            msg = re.sub("{{" + m.group(1) + "}}", ", ".join(rs), msg)
+        """
 
         return msg
 
@@ -409,7 +433,7 @@ class NoteBook(object):
             starts.append(match.span()[0])
         ends = starts[1:] + [len(selection)]
         ijs = zip(starts, ends)
-        final = [selection[i:j].strip() for i,j in ijs]
+        final = [selection[i:j].strip() for i, j in ijs]
 
         includes = [section for section in final if section[0] != '-']
         excludes = [section for section in final if section not in includes]
@@ -420,18 +444,21 @@ class NoteBook(object):
         parent_level, parent_pattern = parent.split(".")
         candidates = hlevel_dict[int(parent_level[-1])]
 
-        parent_id = self.get_cells_containing(parent_pattern, ids=candidates)[0]
+        parent_id = self.get_cells_containing(
+            parent_pattern, ids=candidates)[0]
         parent_start, parent_end, parent_level = start_end[parent_id]
-        parent_range = range(parent_start, parent_end+1)
+        parent_range = range(parent_start, parent_end + 1)
 
         # for h1 h12 get only section h12 of h1
         if len(includes) > 1:
             sections_ids = []
             for section in includes[1:]:
                 section_level, section_pattern = section.split(".")
-                section_id = self.get_cells_containing(section_pattern, ids=parent_range)[0]
-                section_start, section_end, section_level = start_end[section_id]
-                sections_ids.extend(range(section_start, section_end+1))
+                section_id = self.get_cells_containing(
+                    section_pattern, ids=parent_range)[0]
+                section_start, section_end, section_level = start_end[
+                    section_id]
+                sections_ids.extend(range(section_start, section_end + 1))
             return sections_ids
 
         # for h1 -h12 get all of h1 except section h12
@@ -439,9 +466,11 @@ class NoteBook(object):
             excludes_ids = []
             for exclude in excludes:
                 exclude_level, exclude_pattern = exclude.split(".")
-                exclude_id = self.get_cells_containing(exclude_pattern, ids=parent_range)[0]
-                exclude_start, exclude_end, exclude_level = start_end[exclude_id]
-                excludes_ids.extend(range(exclude_start, exclude_end+1))
+                exclude_id = self.get_cells_containing(
+                    exclude_pattern, ids=parent_range)[0]
+                exclude_start, exclude_end, exclude_level = start_end[
+                    exclude_id]
+                excludes_ids.extend(range(exclude_start, exclude_end + 1))
             return [idx for idx in parent_range if idx not in excludes_ids]
 
         return parent_range
@@ -491,7 +520,7 @@ class NoteBook(object):
         rh3 = re.compile('(?<!#)### ')
         rh4 = re.compile('(?<!#)#### ')
         rhs = rh1, rh2, rh3, rh4
-        hs = {1:[], 2:[], 3: [], 4: []}
+        hs = {1: [], 2: [], 3: [], 4: []}
         idxs = self.structure['markdown']
         cells = self.get_cells_by_id(idxs)
         pairs = zip(idxs, cells)
@@ -506,7 +535,7 @@ class NoteBook(object):
                 fa = rh.findall(source)
                 if fa:
                     for match in fa:
-                        hs[j+1].append(idx)
+                        hs[j + 1].append(idx)
         return hs
 
     def get_tree(self):
@@ -632,7 +661,9 @@ class NoteBook(object):
             # Try to parse it -- warn the user (but don't die) if
             # we can't make sense of what we're seeing.
             if not re.match("\# \w+", src):
-                print("The first cell should be of level h1 and contain a bulleted list of metadata.")
+                print(
+                    "The first cell should be of level h1 and contain a bulleted list of metadata."
+                )
             else:
                 # In the future it might be a good idea to make this
                 # check a little smarter (e.g. to allow other types of
@@ -640,14 +671,14 @@ class NoteBook(object):
                 for l in src.splitlines():
                     m = re.match("(?:\-|\*|\d+)\.? ([^\:]+?)\: (.+)", l)
                     if m is not None:
-                        val = [ s.strip() for s in m.group(2).split(';')]
-                        if len(val)==1:
+                        val = [s.strip() for s in m.group(2).split(';')]
+                        if len(val) == 1:
                             val = val[0]
 
                         #print("Setting: meta[" + m.group(1) + "] = " + str(val))
                         meta[m.group(1)] = val
-                    elif re.match("\# ",l):
-                        self.name = l.replace("# ","")
+                    elif re.match("\# ", l):
+                        self.name = l.replace("# ", "")
                         content += l + "\n"
                     else:
                         content += l + "\n"
@@ -680,7 +711,7 @@ class NoteBook(object):
 
             # A process that looks progressively further up the diretory
             # tree until it finds a repo.
-            while not os.path.exists(os.path.join(repo_path,'.git')):
+            while not os.path.exists(os.path.join(repo_path, '.git')):
                 repo_path = os.path.dirname(repo_path)
 
             # Throws InvalidGitRepositoryError if a .git directory
@@ -693,9 +724,11 @@ class NoteBook(object):
 
             hc = repo.head.commit
             rp['author.name'] = hc.author.name
-            rp['authored_date'] = datetime.fromtimestamp(hc.authored_date).strftime('%Y-%m-%d %H:%M:%S')
+            rp['authored_date'] = datetime.fromtimestamp(
+                hc.authored_date).strftime('%Y-%m-%d %H:%M:%S')
             rp['committer.name'] = hc.committer.name
-            rp['committed_date'] = datetime.fromtimestamp(hc.committed_date).strftime('%Y-%m-%d %H:%M:%S')
+            rp['committed_date'] = datetime.fromtimestamp(
+                hc.committed_date).strftime('%Y-%m-%d %H:%M:%S')
             rp['sha'] = hc.hexsha
 
             self.repo = rp
@@ -720,8 +753,8 @@ class NoteBook(object):
             versions.
         """
         if not hasattr(self, 'libs'):
-            libs  = set() # All unique libraries used
-            vlibs = {} # Versioned libraries
+            libs = set()  # All unique libraries used
+            vlibs = {}  # Versioned libraries
 
             # Iterate over the code cell-types
             for c in self.structure['code']:
@@ -733,7 +766,7 @@ class NoteBook(object):
                         m = re.match("(?:from|import) (\S+)", l)
                         if m:
                             libs.add(m.group(1))
-                except IndexError: #Catch index error (not sure where this comes from)
+                except IndexError:  #Catch index error (not sure where this comes from)
                     pass
 
             # Try to get the versions in use on the machine
@@ -749,9 +782,10 @@ class NoteBook(object):
                         ver = mod.version
                     except AttributeError:
                         print("Unable to determine version for: " + l)
-                        print("Currently we check <module>.__version__ and <module>.version")
+                        print(
+                            "Currently we check <module>.__version__ and <module>.version"
+                        )
                         ver = "?"
-                        pass
                 vlibs[l] = ver
             self.libs = vlibs.copy()
 
@@ -788,9 +822,10 @@ class NoteBook(object):
             if pattern in cell.source():
                 matches.append(i)
         if not matches:
-             #s="Warning: '%s' not found in %s"%(pattern, str(notebook))
-             s = "Warning: '{0}' not found in {1} (instance {2})".format(pattern, self.nb_path, str(self))
-             print(s)
+            #s="Warning: '%s' not found in %s"%(pattern, str(notebook))
+            s = "Warning: '{0}' not found in {1} (instance {2})".format(
+                pattern, self.nb_path, str(self))
+            print(s)
         return matches
 
     def get_section_start_end(self):
@@ -832,7 +867,7 @@ class NoteBook(object):
                 mapping.append([start, end, k])
 
         mapping.sort()
-        return dict([(key, [key, s,e]) for key, s, e in mapping])
+        return dict([(key, [key, s, e]) for key, s, e in mapping])
 
     def compose_metadata(self):
         """Return combined metadata from the source notebooks."""
@@ -879,14 +914,16 @@ class NoteBook(object):
             if n.nb['nbformat'] > highest_major_v:
                 highest_major_v = n.nb['nbformat']
                 highest_minor_v = n.nb['nbformat_minor']
-            elif n.nb['nbformat'] > highest_major_v and n.nb['nbformat_minor'] > highest_minor_v:
+            elif n.nb['nbformat'] > highest_major_v and n.nb[
+                    'nbformat_minor'] > highest_minor_v:
                 highest_minor_v = n.nb['nbformat_minor']
 
         n = self
         if n.nb['nbformat'] > highest_major_v:
             highest_major_v = n.nb['nbformat']
             highest_minor_v = n.nb['nbformat_minor']
-        elif n.nb['nbformat'] >= highest_major_v and n.nb['nbformat_minor'] > highest_minor_v:
+        elif n.nb['nbformat'] >= highest_major_v and n.nb[
+                'nbformat_minor'] > highest_minor_v:
             highest_minor_v = n.nb['nbformat_minor']
 
         return (highest_major_v, highest_minor_v)
@@ -900,28 +937,27 @@ class NoteBook(object):
         """
         new_cells = []
 
-        for idx, cell in enumerate(self.cells): # For each geopyter cell
+        for idx, cell in enumerate(self.cells):  # For each geopyter cell
             new_cells.extend(cell.get_content())
 
-        print("Composing content for " + self.nb_path + " with " + str(len(new_cells)) + " cells of new content.")
+        print("Composing content for " + self.nb_path + " with " +
+              str(len(new_cells)) + " cells of new content.")
         return new_cells
 
     def compile(self):
-        """Compile notebook and save to nb_path
+        """Compile notebook
 
-        Parameters
-        ==========
-        nb_path: string
-                 file path for new notbook
-        """
 
-        nb = nbformat.v4.new_notebook() # Create a new notebook
+        No parameters are passed. This sets the `compiled` attribute."""
 
-        nb.metadata = self.compose_metadata() # Set the metadata details
+        nb = nbformat.v4.new_notebook()  # Create a new notebook
 
-        nb.nbformat, nb.nbformat_minor = self.compose_version() # Set the version info
+        nb.metadata = self.compose_metadata()  # Set the metadata details
 
-        nb.cells = self.compose_content() # Compose the notebook content
+        nb.nbformat, nb.nbformat_minor = self.compose_version(
+        )  # Set the version info
+
+        nb.cells = self.compose_content()  # Compose the notebook content
 
         # Append the credits cell
         nb.cells.append(
