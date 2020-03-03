@@ -1,0 +1,10 @@
+name: geopyter
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - jupyterlab
+  - pysal
+  - git
+  - pysal
+  - requests
