@@ -5,6 +5,6 @@ channels:
 dependencies:
   - jupyterlab
   - pysal
-  - git
+  - gitpython
   - pysal
   - requests
