@@ -1,4 +1,5 @@
 # GeoPyTeR: Geographical Python Teaching Resource
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pysal/geopyter/master)
 
 
 ## Vision
